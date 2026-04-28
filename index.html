@@ -156,8 +156,16 @@ select option { background: white; }
 .photo-upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; background: var(--purple-light); transition: border-color 0.15s; margin-bottom: 6px; }
 .photo-upload-area:hover { border-color: var(--purple-mid); }
 .photo-thumb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.photo-thumb-large { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+.photo-thumb-large { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: zoom-in; transition: opacity 0.15s; }
+.photo-thumb-large:hover { opacity: 0.8; }
 .photo-upload-status { font-size: 11px; color: var(--muted); }
+
+/* Lightbox */
+#photoLightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:1000; align-items:center; justify-content:center; cursor:zoom-out; }
+#photoLightbox.open { display:flex; }
+#photoLightbox img { max-width:92vw; max-height:90vh; border-radius:10px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+#photoLightbox .lb-close { position:absolute; top:16px; right:20px; color:white; font-size:32px; cursor:pointer; line-height:1; opacity:0.8; }
+#photoLightbox .lb-close:hover { opacity:1; }
 
 /* Responsive mobile */
 @media (max-width: 600px) {
@@ -280,9 +288,7 @@ select option { background: white; }
             </div>
             <div class="field-group">
               <div class="field-label">Breed / Type</div>
-              <select id="editBreed">
-                <option value="">— select category first —</option>
-              </select>
+              <select id="editBreed"><option value="">— select category first —</option></select>
             </div>
           </div>
           <div class="field-group">
@@ -292,7 +298,7 @@ select option { background: white; }
           <div class="field-group">
             <div class="field-label">Photo</div>
             <div id="photoThumbRow" class="photo-thumb-row" style="display:none">
-              <img id="photoThumbLarge" class="photo-thumb-large">
+              <img id="photoThumbLarge" class="photo-thumb-large" onclick="openLightbox(this.src)">
               <div>
                 <div id="photoUrl" style="font-size:10px;color:var(--muted);word-break:break-all;max-width:300px"></div>
                 <button class="btn btn-red" style="margin-top:6px;padding:4px 10px;font-size:11px" onclick="removePhoto()">✕ Remove</button>
@@ -376,6 +382,12 @@ select option { background: white; }
     </div><!-- end panel -->
 </div><!-- end main -->
 
+<!-- LIGHTBOX -->
+<div id="photoLightbox" onclick="closeLightbox()">
+  <span class="lb-close">×</span>
+  <img id="lightboxImg" src="">
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -417,12 +429,8 @@ function syncToSheets() {
         body: JSON.stringify({ artworks: db.artworks, nextId: db.nextId })
       });
       const data = await res.json();
-      if (data.success) {
-        setSyncStatus('✓ Saved');
-        setTimeout(() => setSyncStatus(''), 3000);
-      } else {
-        setSyncStatus('⚠️ Save failed');
-      }
+      if (data.success) { setSyncStatus('✓ Saved'); setTimeout(() => setSyncStatus(''), 3000); }
+      else { setSyncStatus('⚠️ Save failed'); }
     } catch { setSyncStatus('⚠️ Save failed'); }
   }, 1500);
 }
@@ -590,7 +598,7 @@ Then: SEO_DESC: [a good meta description under 160 chars]`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, messages:[{role:'user',content:prompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user',content:prompt}] })
     });
     const data = await res.json();
     const text = data.content?.[0]?.text||'';
@@ -815,19 +823,12 @@ const BREED_OPTIONS = {
   'Other Animals': ['Bird','Chicken/Duck','Cow','Frog','Giraffe','Goat','Hippo','Horse','Llama','Monkey','Owl','Pig','Raccoon','Rhino','Skunk','Sloth','Squirrel','Other'],
   'Other': ['Other']
 };
-
 function updateBreedOptions() {
   const cat = document.getElementById('editCategory').value;
   const sel = document.getElementById('editBreed');
   const breeds = BREED_OPTIONS[cat] || [];
-  if (!breeds.length) {
-    sel.innerHTML = '<option value="">— select category first —</option>';
-    sel.disabled = true;
-  } else {
-    sel.disabled = false;
-    sel.innerHTML = '<option value="">— select type —</option>' +
-      breeds.map(b => `<option value="${b}">${b}</option>`).join('');
-  }
+  if (!breeds.length) { sel.innerHTML = '<option value="">— select category first —</option>'; sel.disabled = true; }
+  else { sel.disabled = false; sel.innerHTML = '<option value="">— select type —</option>' + breeds.map(b=>`<option value="${b}">${b}</option>`).join(''); }
 }
 
 // ── PHOTO UPLOAD ──
@@ -844,21 +845,17 @@ async function uploadPhoto(input) {
     img.onload = async () => {
       const canvas = document.createElement('canvas');
       const max = 1200; let w = img.width, h = img.height;
-      if (w > max || h > max) { if (w > h) { h = Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
+      if (w > max || h > max) { if (w > h) { h=Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
       canvas.width=w; canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       const imageData = canvas.toDataURL('image/jpeg', 0.82);
       const fileName = 'jamie_' + currentId + '_' + Date.now() + '.jpg';
       statusEl.textContent = '⏳ Uploading…';
       try {
-        const res = await fetch(PHOTO_UPLOAD_URL, {
-          method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ imageData, fileName })
-        });
+        const res = await fetch(PHOTO_UPLOAD_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({imageData, fileName}) });
         const data = await res.json();
         if (data.success) {
-          a.photo = data.url;
-          saveDb();
+          a.photo = data.url; saveDb();
           document.getElementById('photoThumbLarge').src = data.url;
           document.getElementById('photoUrl').textContent = data.url;
           document.getElementById('photoThumbRow').style.display = 'flex';
@@ -866,7 +863,7 @@ async function uploadPhoto(input) {
           document.getElementById('detailThumb').innerHTML = `<img src="${data.url}" onerror="this.style.display='none'">`;
           renderSidebar();
           statusEl.textContent = '✓ Photo saved!';
-          setTimeout(() => statusEl.textContent='', 3000);
+          setTimeout(()=>statusEl.textContent='', 3000);
         } else { statusEl.textContent = '⚠️ Upload failed: '+(data.error||'unknown'); }
       } catch(err) { statusEl.textContent = '⚠️ Error: '+err.message; }
     };
@@ -878,14 +875,29 @@ async function uploadPhoto(input) {
 function removePhoto() {
   const a = db.artworks.find(x=>x.id===currentId); if (!a) return;
   if (!confirm('Remove photo?')) return;
-  a.photo = '';
-  saveDb();
+  a.photo = ''; saveDb();
   document.getElementById('photoThumbRow').style.display = 'none';
   document.getElementById('photoUploadArea').style.display = 'block';
   document.getElementById('photoUploadStatus').textContent = '';
   document.getElementById('detailThumb').innerHTML = '🖼️';
-  renderSidebar();
-  toast('Photo removed');
+  renderSidebar(); toast('Photo removed');
+}
+
+// ── LIGHTBOX ──
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('photoLightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('photoLightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
 // ── INIT ──
