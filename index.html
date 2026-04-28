@@ -258,7 +258,10 @@ select option { background: white; }
             </div>
             <div class="field-group">
               <div class="field-label">Breed / Type</div>
-              <select id="editBreed"><option value="">— select category first —</option></select>
+              <select id="editBreed" onchange="handleBreedChange()">
+                <option value="">— select category first —</option>
+              </select>
+              <input type="text" id="editBreedOther" placeholder="Type breed or type…" style="display:none;margin-top:6px">
             </div>
           </div>
           <div class="field-group">
@@ -466,7 +469,17 @@ function selectProduct(id) {
   document.getElementById('editTitle').value = a.title||'';
   document.getElementById('editCategory').value = a.category||'';
   updateBreedOptions();
-  document.getElementById('editBreed').value = a.breed||'';
+  // If saved breed isn't in dropdown, it was a custom Other value
+  const breedSel = document.getElementById('editBreed');
+  const breedInList = [...breedSel.options].some(o => o.value === a.breed);
+  if (a.breed && !breedInList) {
+    breedSel.value = 'Other';
+    document.getElementById('editBreedOther').value = a.breed;
+    document.getElementById('editBreedOther').style.display = 'block';
+  } else {
+    breedSel.value = a.breed||'';
+    document.getElementById('editBreedOther').style.display = 'none';
+  }
   document.getElementById('editDetails').value = a.details||'';
   document.getElementById('editTags').value = a.tags||a.shopifyTags||'';
   document.getElementById('editDesc').value = a.desc||a.shopifyDesc||'';
@@ -495,7 +508,7 @@ function saveProduct() {
   if (!a) return;
   a.title = document.getElementById('editTitle').value.trim();
   a.category = document.getElementById('editCategory').value;
-  a.breed = document.getElementById('editBreed').value;
+  a.breed = getBreedValue();
   a.details = document.getElementById('editDetails').value.trim();
   a.tags = document.getElementById('editTags').value.trim();
   a.desc = document.getElementById('editDesc').value.trim();
@@ -521,7 +534,7 @@ async function generateDescription() {
   status.textContent = '✨ Generating…';
   const title = document.getElementById('editTitle').value||a.title;
   const category = document.getElementById('editCategory').value;
-  const breed = document.getElementById('editBreed').value;
+  const breed = getBreedValue();
   const details = document.getElementById('editDetails').value;
   const catBreed = [category, breed].filter(Boolean).join(' — ');
   const prompt = `Write a compelling Shopify product description for this art print:
@@ -768,8 +781,34 @@ function updateBreedOptions() {
   const cat = document.getElementById('editCategory').value;
   const sel = document.getElementById('editBreed');
   const breeds = BREED_OPTIONS[cat] || [];
-  if (!breeds.length) { sel.innerHTML = '<option value="">— select category first —</option>'; sel.disabled = true; }
-  else { sel.disabled = false; sel.innerHTML = '<option value="">— select type —</option>' + breeds.map(b=>`<option value="${b}">${b}</option>`).join(''); }
+  if (!breeds.length) {
+    sel.innerHTML = '<option value="">— select category first —</option>';
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— select type —</option>' +
+      breeds.map(b=>`<option value="${b}">${b}</option>`).join('');
+  }
+  document.getElementById('editBreedOther').style.display = 'none';
+  document.getElementById('editBreedOther').value = '';
+}
+
+function handleBreedChange() {
+  const val = document.getElementById('editBreed').value;
+  const otherInput = document.getElementById('editBreedOther');
+  if (val === 'Other') {
+    otherInput.style.display = 'block';
+    otherInput.focus();
+  } else {
+    otherInput.style.display = 'none';
+    otherInput.value = '';
+  }
+}
+
+function getBreedValue() {
+  const sel = document.getElementById('editBreed').value;
+  if (sel === 'Other') return document.getElementById('editBreedOther').value.trim() || 'Other';
+  return sel;
 }
 
 // ── PHOTO UPLOAD ──
