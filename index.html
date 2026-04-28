@@ -2,567 +2,399 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Jamie Morath Art — Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jamie Morath Art — Studio Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f0eef8;
-    --surface: #ffffff;
-    --card: #ffffff;
-    --border: #ddd8f0;
-    --gold: #e8a020;
-    --gold-dim: #c4871a;
-    --cream: #2d1b6b;
-    --muted: #8b7fb8;
-    --text: #2d1b6b;
-    --red: #c0392b;
-    --green: #27ae60;
-    --blue: #3498db;
-    --purple: #6b21e8;
-    --purple-dark: #4a0ea8;
-    --purple-mid: #7c3aed;
-    --purple-light: #ede9ff;
-    --purple-header: #3b1a8f;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    min-height: 100vh;
-    padding-bottom: 70px;
-  }
-  .app-header {
-    background: var(--purple-header);
-    border-bottom: none;
-    padding: 14px 16px 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .app-header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: #ffffff;
-    letter-spacing: 0.02em;
-  }
-  .app-header span { color: rgba(255,255,255,0.6); font-size: 11px; font-style: italic; font-family: 'Playfair Display', serif; }
-  .tab-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--purple-header); border-top: 1px solid rgba(255,255,255,0.1);
-    display: flex; z-index: 100;
-  }
-  .tab-btn {
-    flex: 1; padding: 10px 4px 8px; background: none; border: none;
-    color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; font-size: 10px;
-    cursor: pointer; display: flex; flex-direction: column; align-items: center;
-    gap: 3px; transition: color 0.15s;
-  }
-  .tab-btn.active { color: var(--gold); }
-  .tab-btn .icon { font-size: 18px; }
-  .page { display: none; padding: 14px; }
-  .page.active { display: block; }
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px; margin-bottom: 12px;
-    box-shadow: 0 1px 4px rgba(107,33,232,0.07);
-  }
-  .form-group { margin-bottom: 12px; }
-  label {
-    display: block; color: var(--purple-mid); font-size: 10px;
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; font-weight: 500;
-  }
-  input, textarea, select {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--text); font-family: 'DM Mono', monospace;
-    font-size: 13px; padding: 9px 11px; outline: none; transition: border-color 0.15s;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--purple-mid); }
-  textarea { resize: vertical; min-height: 70px; }
-  select option { background: #fff; color: var(--text); }
-  .btn {
-    display: inline-block; padding: 9px 16px; border-radius: 7px; border: none;
-    font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s; text-align: center;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn-gold { background: var(--purple-mid); color: #fff; font-weight: 600; }
-  .btn-gold:hover { background: var(--purple-dark); }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--purple-mid); }
-  .btn-red { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: #c0392b; }
-  .btn-green { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.3); color: #27ae60; }
-  .btn-full { width: 100%; display: block; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; }
-  .badge-available { background: rgba(39,174,96,0.12); color: #1a7a40; border: 1px solid rgba(39,174,96,0.3); }
-  .badge-sold { background: rgba(192,57,43,0.1); color: #a02020; border: 1px solid rgba(192,57,43,0.25); }
-  .badge-reserved { background: rgba(107,33,232,0.1); color: var(--purple-mid); border: 1px solid rgba(107,33,232,0.2); }
-  .badge-nfs { background: rgba(100,100,120,0.1); color: #666; border: 1px solid rgba(100,100,120,0.2); }
-  .badge-wip { background: rgba(52,152,219,0.1); color: #1a6a9a; border: 1px solid rgba(52,152,219,0.25); }
-  .art-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .art-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
-    box-shadow: 0 1px 4px rgba(107,33,232,0.07);
-  }
-  .art-card:active { border-color: var(--purple-mid); box-shadow: 0 2px 8px rgba(107,33,232,0.15); }
-  .art-thumb {
-    width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--purple-light);
-    display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 28px;
-  }
-  .art-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .art-info { padding: 8px; }
-  .art-info .title {
-    font-family: 'Playfair Display', serif; font-size: 12px; color: var(--purple-header);
-    margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .art-info .price { color: var(--gold); font-size: 11px; font-weight: 600; }
-  .search-bar { position: relative; margin-bottom: 10px; }
-  .search-bar input { padding-left: 32px; }
-  .search-bar .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
-  .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px; scrollbar-width: none; }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .filter-chip {
-    flex-shrink: 0; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
-    background: #fff; color: var(--muted); font-family: 'DM Mono', monospace;
-    font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  }
-  .filter-chip.active { border-color: var(--purple-mid); color: var(--purple-mid); background: var(--purple-light); }
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(45,27,107,0.5);
-    z-index: 200; overflow-y: auto; padding: 20px 14px;
-  }
-  .modal-overlay.open { display: block; }
-  .modal {
-    background: #fff; border: 1px solid var(--border);
-    border-radius: 14px; padding: 18px; max-width: 500px; margin: 0 auto;
-    box-shadow: 0 8px 32px rgba(107,33,232,0.15);
-  }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .modal-title { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--purple-header); }
-  .close-btn { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px; }
-  .photo-upload-area {
-    border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
-    text-align: center; cursor: pointer; transition: border-color 0.15s; margin-bottom: 8px;
-    background: var(--purple-light);
-  }
-  .photo-upload-area:hover { border-color: var(--purple-mid); }
-  .photo-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; margin-top: 8px; }
-  .caption-box {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 12px; font-size: 12px; line-height: 1.7; color: var(--text);
-    white-space: pre-wrap; word-break: break-word; min-height: 80px;
-  }
-  .caption-loading { color: var(--muted); font-style: italic; animation: pulse 1.2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .stat-card { background: var(--purple-header); border: none; border-radius: 10px; padding: 14px; text-align: center; }
-  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: #fff; line-height: 1; margin-bottom: 4px; }
-  .stat-label { color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .platform-item {
-    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-    background: var(--bg); border: 1px solid var(--border); border-radius: 7px;
-    cursor: pointer; font-size: 12px; transition: border-color 0.15s; color: var(--text);
-  }
-  .platform-item.checked { border-color: var(--purple-mid); color: var(--purple-mid); background: var(--purple-light); }
-  .platform-item input[type=checkbox] { display: none; }
-  .channel-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-  .channel-name { width: 90px; color: var(--muted); font-size: 11px; flex-shrink: 0; }
-  .channel-fill-bg { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
-  .channel-fill { height: 100%; background: var(--purple-mid); border-radius: 3px; transition: width 0.4s; }
-  .channel-count { color: var(--text); font-size: 11px; width: 20px; text-align: right; flex-shrink: 0; }
-  .row { display: flex; gap: 8px; }
-  .row > * { flex: 1; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-  #toast {
-    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--purple-header); color: #fff; padding: 9px 18px; border-radius: 20px;
-    font-size: 12px; font-weight: 500; opacity: 0; transition: all 0.25s;
-    z-index: 999; pointer-events: none; white-space: nowrap;
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .detail-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 10px; background: var(--purple-light); margin-bottom: 14px; }
-  #wmCanvas { display: none; }
-  .api-key-row { display: flex; gap: 8px; }
-  .api-key-row input { flex: 1; }
-  .section-title { color: var(--purple-mid); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; margin-top: 4px; font-weight: 600; }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
-  .empty-state .big { font-size: 36px; margin-bottom: 8px; }
-  .empty-state p { font-size: 12px; line-height: 1.6; }
+:root {
+  --purple-header: #3b1a8f;
+  --purple-mid: #7c3aed;
+  --purple-light: #ede9ff;
+  --purple-dark: #2d1266;
+  --bg: #f0eef8;
+  --white: #ffffff;
+  --border: #ddd8f0;
+  --muted: #8b7fb8;
+  --text: #2d1b6b;
+  --gold: #e8a020;
+  --green: #27ae60;
+  --red: #c0392b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* HEADER */
+.header {
+  background: var(--purple-header);
+  color: white;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.header-logo { font-size: 22px; }
+.header-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; }
+.header-sub { font-size: 11px; opacity: 0.6; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.header-count { font-size: 12px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; }
+.btn-export { background: var(--gold); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; }
+#syncStatus { font-size: 10px; opacity: 0.7; }
+
+/* API BAR */
+.api-bar {
+  background: var(--purple-dark);
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.api-bar label { color: rgba(255,255,255,0.7); font-size: 11px; white-space: nowrap; }
+.api-bar input { flex: 1; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; font-size: 12px; padding: 5px 10px; outline: none; font-family: 'DM Sans', sans-serif; }
+.api-bar input::placeholder { color: rgba(255,255,255,0.35); }
+.api-status { font-size: 11px; color: #90ee90; white-space: nowrap; }
+.api-hint { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+.api-hint a { color: rgba(255,255,255,0.7); }
+
+/* MAIN LAYOUT */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar { width: 300px; flex-shrink: 0; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-search { padding: 10px; border-bottom: 1px solid var(--border); }
+.sidebar-search input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; background: var(--bg); color: var(--text); }
+.sidebar-count { padding: 5px 10px; font-size: 11px; color: var(--purple-mid); font-weight: 500; }
+.sidebar-list { flex: 1; overflow-y: auto; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s;
+}
+.sidebar-item:hover { background: var(--purple-light); }
+.sidebar-item.active { background: var(--purple-light); border-left: 3px solid var(--purple-mid); }
+.sidebar-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: var(--purple-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; }
+.sidebar-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.sidebar-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.sidebar-badge { font-size: 10px; margin-top: 2px; padding: 1px 7px; border-radius: 10px; display: inline-block; font-weight: 500; }
+.badge-todo { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+.badge-done { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.badge-available { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.badge-sold { background: #fce4ec; color: #c62828; border: 1px solid #ef9a9a; }
+.badge-reserved { background: var(--purple-light); color: var(--purple-mid); border: 1px solid #c4b5fd; }
+.badge-nfs { background: #f5f5f5; color: #666; border: 1px solid #ddd; }
+.badge-wip { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+
+/* RIGHT PANEL */
+.panel { flex: 1; overflow-y: auto; background: var(--bg); }
+.panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 12px; }
+.panel-empty .icon { font-size: 52px; }
+.panel-empty p { font-size: 13px; }
+
+.panel-content { padding: 20px; max-width: 700px; }
+
+/* PRODUCT HEADER in panel */
+.product-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; background: var(--purple-mid); border-radius: 10px; padding: 16px; color: white; }
+.product-header-thumb { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: rgba(255,255,255,0.15); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.product-header-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.product-header-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; }
+.product-header-handle { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+/* SECTION */
+.section { background: var(--white); border-radius: 10px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); }
+.section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--purple-mid); font-weight: 600; margin-bottom: 12px; }
+.field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.field-group { margin-bottom: 12px; }
+input[type=text], input[type=number], input[type=url], textarea, select {
+  width: 100%; border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--purple-mid); background: white; }
+textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+select option { background: white; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { padding: 8px 16px; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--purple-mid); color: white; }
+.btn-primary:hover { background: var(--purple-header); }
+.btn-gold { background: var(--gold); color: white; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-red { background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); color: var(--red); }
+.btn-green { background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.25); color: var(--green); }
+.btn-full { width: 100%; display: block; text-align: center; }
+.btn-row { display: flex; gap: 8px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* AI caption area */
+.caption-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; min-height: 80px; }
+.caption-loading { color: var(--muted); font-style: italic; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Shopify tab */
+.tab-row { display: flex; border-bottom: 1px solid var(--border); background: var(--white); padding: 0 20px; flex-shrink: 0; }
+.tab { padding: 10px 14px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.tab.active { color: var(--purple-mid); border-bottom-color: var(--purple-mid); }
+
+/* Import area */
+.drop-area { border: 2px dashed var(--border); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; background: var(--purple-light); transition: border-color 0.15s; }
+.drop-area:hover { border-color: var(--purple-mid); }
+.progress-bar-bg { background: var(--bg); border-radius: 4px; height: 8px; overflow: hidden; margin: 10px 0; }
+.progress-bar { height: 100%; background: var(--purple-mid); border-radius: 4px; transition: width 0.3s; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat-box { background: var(--purple-header); border-radius: 8px; padding: 12px; text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 24px; color: white; }
+.stat-lbl { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Toast */
+#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--purple-header); color: white; padding: 9px 18px; border-radius: 20px; font-size: 12px; opacity: 0; transition: all 0.25s; z-index: 999; pointer-events: none; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Responsive mobile */
+@media (max-width: 600px) {
+  .sidebar { width: 120px; }
+  .sidebar-name { font-size: 10px; }
+  .sidebar-thumb { width: 32px; height: 32px; }
+  .header-sub, #syncStatus { display: none; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
 
-<div class="app-header">
-  <h1>Jamie Morath Art</h1>
-  <span>studio manager</span>
-  <span id="syncStatus" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,0.7)"></span>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">🎨</div>
+  <div>
+    <div class="header-title">JAMIE MORATH ART</div>
+    <div class="header-sub">Studio Manager</div>
+  </div>
+  <div class="header-right">
+    <span id="syncStatus"></span>
+    <span class="header-count" id="headerCount">0 products</span>
+    <button class="btn-export" onclick="exportShopifyCSV()">⬇ Export to Shopify CSV</button>
+  </div>
 </div>
 
-<!-- CATALOG -->
-<div class="page active" id="page-catalog">
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="Search artwork..." oninput="renderCatalog()">
-  </div>
-  <div class="filter-row">
-    <button class="filter-chip active" onclick="setFilter('all',this)">All</button>
-    <button class="filter-chip" onclick="setFilter('available',this)">Available</button>
-    <button class="filter-chip" onclick="setFilter('sold',this)">Sold</button>
-    <button class="filter-chip" onclick="setFilter('reserved',this)">Reserved</button>
-    <button class="filter-chip" onclick="setFilter('nfs',this)">Not For Sale</button>
-    <button class="filter-chip" onclick="setFilter('wip',this)">WIP</button>
-  </div>
-  <div id="artGrid" class="art-grid"></div>
-  <button class="btn btn-gold btn-full" style="margin-top:4px" onclick="openAddModal()">+ Add Artwork</button>
+<!-- API BAR -->
+<div class="api-bar">
+  <label>🔑 API Key:</label>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-..." onchange="saveApiKey()">
+  <span class="api-status" id="apiKeyStatus"></span>
+  <span class="api-hint">Get your key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span>
 </div>
 
-<!-- CAPTIONS -->
-<div class="page" id="page-captions">
-  <div class="card">
-    <div class="section-title">Select Artwork</div>
-    <select id="captionArtSelect" onchange="updateCaptionArt()">
-      <option value="">— choose a piece —</option>
-    </select>
+<!-- TAB ROW -->
+<div class="tab-row">
+  <div class="tab active" id="tab-catalog" onclick="switchTab('catalog')">🖼️ Catalog</div>
+  <div class="tab" id="tab-shopify" onclick="switchTab('shopify')">🛍️ Shopify Import</div>
+  <div class="tab" id="tab-tracker" onclick="switchTab('tracker')">📊 Sales Tracker</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="searchInput" placeholder="Search products…" oninput="renderSidebar()">
+    </div>
+    <div class="sidebar-count" id="sidebarCount"></div>
+    <div class="sidebar-list" id="sidebarList"></div>
   </div>
-  <div class="card" id="captionArtPreview" style="display:none">
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-      <div id="captionThumb" style="width:64px;height:64px;border-radius:8px;background:var(--surface);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px">🖼️</div>
-      <div>
-        <div id="captionArtTitle" style="font-family:'Playfair Display',serif;font-size:15px;color:var(--cream)"></div>
-        <div id="captionArtMeta" style="color:var(--muted);font-size:11px;margin-top:3px"></div>
-        <div id="captionArtPrice" style="color:var(--gold);font-size:12px;margin-top:2px"></div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel" id="mainPanel">
+
+    <!-- CATALOG PANEL -->
+    <div id="panelCatalog">
+      <div class="panel-empty" id="panelEmpty">
+        <div class="icon">🎨</div>
+        <p>Select a product to start editing</p>
+        <p style="font-size:11px">AI generates description · SEO title · tags</p>
+      </div>
+      <div class="panel-content" id="panelDetail" style="display:none">
+        <div class="product-header">
+          <div class="product-header-thumb" id="detailThumb">🖼️</div>
+          <div>
+            <div class="product-header-title" id="detailTitle"></div>
+            <div class="product-header-handle" id="detailHandle"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Product Info</div>
+          <div class="field-group">
+            <div class="field-label">Title</div>
+            <input type="text" id="editTitle">
+          </div>
+          <div class="row2">
+            <div class="field-group">
+              <div class="field-label">Status</div>
+              <select id="editStatus">
+                <option value="available">Available</option>
+                <option value="sold">Sold</option>
+                <option value="reserved">Reserved</option>
+                <option value="nfs">Not For Sale</option>
+                <option value="wip">Work in Progress</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <div class="field-label">Price (5x7 base)</div>
+              <input type="number" id="editPrice" placeholder="38.00" step="0.01">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field-group">
+              <div class="field-label">Medium</div>
+              <input type="text" id="editMedium" placeholder="Acrylic, Watercolor…">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Size (original)</div>
+              <input type="text" id="editSize" placeholder='11"×14"'>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Tags</div>
+            <input type="text" id="editTags" placeholder="dog art, golden retriever, wall art…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Etsy URL</div>
+            <input type="url" id="editEtsy" placeholder="https://etsy.com/listing/...">
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Description (Shopify)</div>
+          <div class="field-group">
+            <textarea id="editDesc" placeholder="Product description for Shopify…" style="min-height:120px"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="genDescBtn" onclick="generateDescription()" style="flex:1">✨ Generate with AI</button>
+            <button class="btn btn-outline" onclick="copyDesc()">📋 Copy</button>
+          </div>
+          <div id="genStatus" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">SEO</div>
+          <div class="field-group">
+            <div class="field-label">SEO Title</div>
+            <input type="text" id="editSeoTitle" placeholder="Auto-generated…">
+          </div>
+          <div class="field-group">
+            <div class="field-label">SEO Description</div>
+            <textarea id="editSeoDesc" placeholder="Auto-generated…" style="min-height:70px"></textarea>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label">Sale Info</div>
+          <div class="row2">
+            <div class="field-group">
+              <div class="field-label">Buyer</div>
+              <input type="text" id="editBuyer" placeholder="Optional">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Sale Date</div>
+              <input type="text" id="editSaleDate" placeholder="YYYY-MM-DD">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field-group">
+              <div class="field-label">Sale Price</div>
+              <input type="number" id="editSalePrice" placeholder="0.00" step="0.01">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Channel</div>
+              <select id="editSaleChannel">
+                <option>Etsy</option><option>Website</option><option>Instagram DM</option>
+                <option>Facebook</option><option>In Person</option><option>Art Show</option>
+                <option>Commission</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:20px">
+          <button class="btn btn-primary" style="flex:1" onclick="saveProduct()">💾 Save Changes</button>
+          <button class="btn btn-outline" onclick="revertProduct()">↺ Revert</button>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label>Caption Style</label>
-      <select id="captionStyle">
-        <option value="story">Story — emotional, personal</option>
-        <option value="minimal">Minimal — clean, simple</option>
-        <option value="sale">Sale — calls to action</option>
-        <option value="hashtag">Hashtag-heavy</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Platform</label>
-      <select id="captionPlatform">
-        <option value="instagram">Instagram</option>
-        <option value="facebook">Facebook</option>
-        <option value="tiktok">TikTok</option>
-        <option value="pinterest">Pinterest</option>
-        <option value="x">X / Twitter</option>
-        <option value="threads">Threads</option>
-        <option value="etsy">Etsy listing</option>
-      </select>
-    </div>
-    <button class="btn btn-gold btn-full" id="genCaptionBtn" onclick="generateCaption()">✨ Generate Caption</button>
-  </div>
-  <div class="card" id="captionResultCard" style="display:none">
-    <div class="section-title">Generated Caption</div>
-    <div class="caption-box" id="captionOutput"></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn btn-outline" style="flex:1" onclick="copyCaption()">📋 Copy</button>
-      <button class="btn btn-outline" style="flex:1" onclick="generateCaption()">↺ Regenerate</button>
-    </div>
-    <hr class="divider">
-    <div class="section-title">Mark as Posted</div>
-    <div class="platform-grid" id="postedPlatforms"></div>
-  </div>
-</div>
 
-<!-- TRACKER -->
-<div class="page" id="page-tracker">
-  <div class="stats-grid" id="statsGrid"></div>
-  <div class="card">
-    <div class="section-title">Sales by Channel</div>
-    <div id="channelBars"></div>
-  </div>
-  <div class="card">
-    <div class="section-title">Recent Activity</div>
-    <div id="recentActivity"></div>
-  </div>
-</div>
-
-<!-- WATERMARK -->
-<div class="page" id="page-watermark">
-  <div class="card">
-    <div class="section-title">Select Photo</div>
-    <div class="photo-upload-area" onclick="document.getElementById('wmFileInput').click()">
-      <div id="wmUploadPrompt">📷 Tap to choose a photo</div>
-      <img id="wmPreviewImg" class="photo-preview" style="display:none">
-    </div>
-    <input type="file" id="wmFileInput" accept="image/*" style="display:none" onchange="loadWmPhoto(this)">
-  </div>
-  <div class="card">
-    <div class="form-group">
-      <label>Watermark Text</label>
-      <input type="text" id="wmText" placeholder="© Jamie Morath Art">
-    </div>
-    <div class="form-group">
-      <label>Opacity</label>
-      <input type="range" id="wmOpacity" min="10" max="90" value="40" style="padding:4px 0">
-    </div>
-    <div class="form-group">
-      <label>Position</label>
-      <div class="row">
-        <button class="btn btn-outline" id="wmPos-bl" onclick="setWmPos('bl')">↙ Bottom Left</button>
-        <button class="btn btn-gold" id="wmPos-br" onclick="setWmPos('br')">↘ Bottom Right</button>
+    <!-- SHOPIFY PANEL -->
+    <div id="panelShopify" style="display:none;padding:20px;max-width:600px">
+      <div class="section">
+        <div class="section-label">Import from Shopify CSV</div>
+        <p style="color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:12px">Export from Shopify → Products → Export → All products as CSV, then upload here.</p>
+        <div class="drop-area" onclick="document.getElementById('shopifyFile').click()">
+          📄 Click to select Shopify products CSV
+        </div>
+        <input type="file" id="shopifyFile" accept=".csv" style="display:none" onchange="importShopifyCSV(this)">
+        <div id="importProgress" style="display:none;margin-top:10px">
+          <div class="progress-bar-bg"><div class="progress-bar" id="importBar" style="width:0%"></div></div>
+          <div id="importStatus" style="font-size:11px;color:var(--muted);text-align:center"></div>
+        </div>
+        <div id="importResult" style="margin-top:10px;font-size:12px;display:none"></div>
       </div>
-      <div class="row" style="margin-top:6px">
-        <button class="btn btn-outline" id="wmPos-tl" onclick="setWmPos('tl')">↖ Top Left</button>
-        <button class="btn btn-outline" id="wmPos-c" onclick="setWmPos('c')">Center</button>
+      <div class="section">
+        <div class="section-label">Export to Shopify CSV</div>
+        <p style="color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:12px">Exports all products with updated descriptions, SEO, and existing image URLs. Upload at Shopify → Products → Import.</p>
+        <div class="field-group">
+          <div class="field-label">Filter</div>
+          <select id="exportFilter">
+            <option value="all">All products</option>
+            <option value="available">Available only</option>
+            <option value="sold">Sold only</option>
+          </select>
+        </div>
+        <button class="btn btn-gold btn-full" onclick="exportShopifyCSV()">⬇ Download Shopify CSV</button>
+        <div id="exportStatus" style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center"></div>
       </div>
     </div>
-    <button class="btn btn-gold btn-full" onclick="applyWatermark()" id="wmApplyBtn" disabled>Apply Watermark</button>
-  </div>
-  <div class="card" id="wmResultCard" style="display:none">
-    <div class="section-title">Result</div>
-    <img id="wmResultImg" style="width:100%;border-radius:8px;margin-bottom:10px">
-    <a id="wmDownloadLink" class="btn btn-green btn-full" download="watermarked.jpg">⬇ Save Image</a>
-  </div>
-  <canvas id="wmCanvas"></canvas>
-</div>
 
-<!-- SETTINGS -->
-<div class="page" id="page-settings">
-  <div class="card">
-    <div class="section-title">AI Caption API Key</div>
-    <p style="color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:10px">Get a free key at console.anthropic.com. Stored only on this device.</p>
-    <div class="api-key-row">
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
-      <button class="btn btn-gold" onclick="saveApiKey()">Save</button>
-    </div>
-    <div id="apiKeyStatus" style="margin-top:8px;font-size:11px;color:var(--muted)"></div>
-  </div>
-  <div class="card">
-    <div class="section-title">Shop Links</div>
-    <div class="form-group">
-      <label>Etsy Shop URL</label>
-      <input type="url" id="settingsEtsy" placeholder="https://etsy.com/shop/JamieMorathArt">
-    </div>
-    <div class="form-group">
-      <label>Website URL</label>
-      <input type="url" id="settingsWebsite" placeholder="https://jamiemorathart.com">
-    </div>
-    <div class="form-group">
-      <label>Default Watermark Text</label>
-      <input type="text" id="settingsWatermark" placeholder="© Jamie Morath Art">
-    </div>
-    <button class="btn btn-gold btn-full" onclick="saveSettings()">Save Settings</button>
-  </div>
-  <div class="card">
-    <div class="section-title">Data</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn btn-outline btn-full" onclick="pullFromSheets()">☁️ Pull from Google Sheets</button>
-      <button class="btn btn-outline btn-full" onclick="exportBackup()">⬇ Export Backup (JSON)</button>
-      <button class="btn btn-outline btn-full" onclick="document.getElementById('importFile').click()">⬆ Import Backup</button>
-      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
-      <button class="btn btn-red btn-full" onclick="resetAllData()">🗑 Reset All Data</button>
-    </div>
-  </div>
-  <div style="text-align:center;color:var(--muted);font-size:10px;padding:10px 0 4px">Jamie Morath Art Studio v2.0</div>
-</div>
-
-<!-- TAB BAR -->
-<div class="tab-bar">
-  <button class="tab-btn active" id="tab-catalog" onclick="showTab('catalog')"><span class="icon">🖼️</span>Catalog</button>
-  <button class="tab-btn" id="tab-captions" onclick="showTab('captions')"><span class="icon">✍️</span>Captions</button>
-  <button class="tab-btn" id="tab-tracker" onclick="showTab('tracker')"><span class="icon">📊</span>Tracker</button>
-  <button class="tab-btn" id="tab-watermark" onclick="showTab('watermark')"><span class="icon">💧</span>Watermark</button>
-  <button class="tab-btn" id="tab-shopify" onclick="showTab('shopify')"><span class="icon">🛍️</span>Shopify</button>
-  <button class="tab-btn" id="tab-settings" onclick="showTab('settings')"><span class="icon">⚙️</span>Settings</button>
-</div>
-
-<!-- ADD/EDIT MODAL -->
-<div class="modal-overlay" id="addModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="addModalTitle">Add Artwork</div>
-      <button class="close-btn" onclick="closeModal('addModal')">×</button>
-    </div>
-    <input type="hidden" id="editId">
-    <div class="photo-upload-area" onclick="document.getElementById('artPhotoInput').click()">
-      <div id="artPhotoPrompt">📷 Tap to add photo</div>
-      <img id="artPhotoPreview" class="photo-preview" style="display:none">
-    </div>
-    <input type="file" id="artPhotoInput" accept="image/*" style="display:none" onchange="loadArtPhoto(this)">
-    <input type="hidden" id="artPhotoData">
-    <div class="form-group" style="margin-top:12px">
-      <label>Title *</label>
-      <input type="text" id="artTitle" placeholder="e.g. Autumn Fields">
-    </div>
-    <div class="row">
-      <div class="form-group">
-        <label>Medium</label>
-        <input type="text" id="artMedium" placeholder="Acrylic, Watercolor…">
+    <!-- TRACKER PANEL -->
+    <div id="panelTracker" style="display:none;padding:20px;max-width:600px">
+      <div class="stats-row" id="statsRow"></div>
+      <div class="section">
+        <div class="section-label">Sales by Channel</div>
+        <div id="channelBars"></div>
       </div>
-      <div class="form-group">
-        <label>Size</label>
-        <input type="text" id="artSize" placeholder='11"×14"'>
+      <div class="section">
+        <div class="section-label">Recently Sold</div>
+        <div id="recentSales"></div>
       </div>
     </div>
-    <div class="row">
-      <div class="form-group">
-        <label>Price ($)</label>
-        <input type="number" id="artPrice" placeholder="0.00" step="0.01">
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select id="artStatus">
-          <option value="available">Available</option>
-          <option value="wip">Work in Progress</option>
-          <option value="reserved">Reserved</option>
-          <option value="nfs">Not For Sale</option>
-          <option value="sold">Sold</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Description</label>
-      <textarea id="artDesc" placeholder="Tell the story of this piece…"></textarea>
-    </div>
-    <div class="form-group">
-      <label>Etsy Listing URL</label>
-      <input type="url" id="artEtsy" placeholder="https://etsy.com/listing/...">
-    </div>
-    <div class="form-group">
-      <label>Website / Other URL</label>
-      <input type="url" id="artWebsite" placeholder="https://...">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-gold" style="flex:1" onclick="saveArtwork()">Save</button>
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal('addModal')">Cancel</button>
-    </div>
-    <div id="deleteArtBtn" style="display:none;margin-top:8px">
-      <button class="btn btn-red btn-full" onclick="deleteArtwork()">Delete Artwork</button>
-    </div>
-  </div>
-</div>
 
-<!-- DETAIL MODAL -->
-<div class="modal-overlay" id="detailModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="detailTitle"></div>
-      <button class="close-btn" onclick="closeModal('detailModal')">×</button>
-    </div>
-    <img id="detailImg" class="detail-img" style="display:none">
-    <div id="detailNoImg" style="width:100%;height:160px;background:var(--surface);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:14px">🖼️</div>
-    <div id="detailBadge" style="margin-bottom:10px"></div>
-    <div id="detailMeta" style="color:var(--muted);font-size:12px;margin-bottom:6px"></div>
-    <div id="detailPrice" style="color:var(--gold);font-family:'Playfair Display',serif;font-size:18px;margin-bottom:10px"></div>
-    <div id="detailDesc" style="font-size:12px;line-height:1.7;color:var(--text);margin-bottom:12px"></div>
-    <div id="detailLinks" style="margin-bottom:12px"></div>
-    <div id="detailSaleInfo" style="margin-bottom:12px"></div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn btn-gold btn-full" onclick="editFromDetail()">✏️ Edit</button>
-      <button class="btn btn-outline btn-full" id="recordSaleBtn" onclick="openSaleModal()">💰 Record Sale</button>
-    </div>
-  </div>
-</div>
-
-<!-- SALE MODAL -->
-<div class="modal-overlay" id="saleModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Record Sale</div>
-      <button class="close-btn" onclick="closeModal('saleModal')">×</button>
-    </div>
-    <div class="form-group">
-      <label>Buyer Name</label>
-      <input type="text" id="saleBuyer" placeholder="Optional">
-    </div>
-    <div class="form-group">
-      <label>Sale Date</label>
-      <input type="date" id="saleDate">
-    </div>
-    <div class="form-group">
-      <label>Sale Price ($)</label>
-      <input type="number" id="salePrice" placeholder="0.00" step="0.01">
-    </div>
-    <div class="form-group">
-      <label>Channel</label>
-      <select id="saleChannel">
-        <option value="Etsy">Etsy</option>
-        <option value="Website">Website</option>
-        <option value="Instagram DM">Instagram DM</option>
-        <option value="Facebook">Facebook</option>
-        <option value="In Person">In Person</option>
-        <option value="Art Show">Art Show</option>
-        <option value="Commission">Commission</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Notes</label>
-      <textarea id="saleNotes" placeholder="Optional notes…" style="min-height:50px"></textarea>
-    </div>
-    <button class="btn btn-gold btn-full" onclick="saveSale()">Save Sale</button>
-  </div>
-</div>
-
-
-<!-- SHOPIFY -->
-<div class="page" id="page-shopify">
-  <div class="card">
-    <div class="section-title">Import from Shopify CSV</div>
-    <p style="color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:10px">Export from Shopify (Products → Export → All products as CSV) then upload here. Existing products with the same handle will be updated.</p>
-    <div class="photo-upload-area" onclick="document.getElementById('shopifyImportFile').click()">
-      <div>📄 Tap to select Shopify CSV file</div>
-    </div>
-    <input type="file" id="shopifyImportFile" accept=".csv" style="display:none" onchange="importShopifyCSV(this)">
-    <div id="importProgress" style="display:none;margin-top:10px">
-      <div style="background:var(--bg);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px">
-        <div id="importBar" style="height:100%;background:var(--purple-mid);width:0%;transition:width 0.3s"></div>
-      </div>
-      <div id="importStatus" style="font-size:11px;color:var(--muted);text-align:center"></div>
-    </div>
-    <div id="importResult" style="margin-top:10px;font-size:12px;display:none"></div>
-  </div>
-  <div class="card">
-    <div class="section-title">Export to Shopify CSV</div>
-    <p style="color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:10px">Generates a Shopify-ready CSV with all 6 size variants, corrected variant names, updated descriptions, and existing image URLs. Upload at Shopify → Products → Import.</p>
-    <div class="form-group">
-      <label>Include products</label>
-      <select id="exportFilter">
-        <option value="all">All products</option>
-        <option value="available">Available only</option>
-        <option value="sold">Sold only</option>
-        <option value="wip">WIP only</option>
-      </select>
-    </div>
-    <button class="btn btn-gold btn-full" onclick="exportShopifyCSV()">⬇ Download Shopify CSV</button>
-    <div id="exportStatus" style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center"></div>
-  </div>
-  <div class="card">
-    <div class="section-title">Catalog Summary</div>
-    <div id="shopifySummary"></div>
-  </div>
-</div>
+  </div><!-- end panel -->
+</div><!-- end main -->
 
 <div id="toast"></div>
 
 <script>
-const STORAGE_KEY = 'jamie_art_v3';
+const STORAGE_KEY = 'jamie_art_v4';
 const SETTINGS_KEY = 'jamie_settings_v1';
 const API_KEY_STORE = 'jamie_api_key';
-const PLATFORMS = ['Instagram','Reels','Facebook','TikTok','Pinterest','X','Etsy','Threads','YouTube','Bluesky','Website','Other'];
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNjDp9KfzbOdnX5ToyZlL5Ctxw99huY2Rr52HcA02ZwzqVxFA2i5TTQ-u2OEx93Jy2aw/exec';
+
+const VARIANT_PRICES = {
+  '5x7 Print':'38.00','8x10 Print':'45.00','11x14 Print':'75.00',
+  '8x10 Matte 5x7 Print':'45.00','11x14 Matte 8x10 Print':'75.00','16x20 Matte 11x14 Print':'113.00',
+  '6x6 Print':'38.00','8x8 Print':'45.00','10x10 Print':'75.00','12x12 Print':'113.00'
+};
+const STANDARD_VARIANTS = ['5x7 Print','8x10 Print','11x14 Print','8x10 Matte 5x7 Print','11x14 Matte 8x10 Print','16x20 Matte 11x14 Print'];
 
 let db = loadDb();
-let settings = loadSettings();
-let currentFilter = 'all';
-let currentDetailId = null;
-let wmPos = 'br';
-let wmPhotoData = null;
+let currentId = null;
+let currentTab = 'catalog';
 
 function loadDb() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : { artworks: [], nextId: 1 }; }
   catch { return { artworks: [], nextId: 1 }; }
 }
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNjDp9KfzbOdnX5ToyZlL5Ctxw99huY2Rr52HcA02ZwzqVxFA2i5TTQ-u2OEx93Jy2aw/exec';
 
 function saveDb() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
@@ -576,846 +408,408 @@ function syncToSheets() {
     setSyncStatus('☁️ Saving…');
     try {
       await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
+        method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save_all', artworks: db.artworks.map(a => ({...a, shopifyVariants: JSON.stringify(a.shopifyVariants||[]), sale: JSON.stringify(a.sale||null), posted: JSON.stringify(a.posted||[])})) })
+        body: JSON.stringify({ action: 'save_all', artworks: db.artworks.map(a => {
+          const {photo, ...rest} = a;
+          return { ...rest,
+            shopifyVariants: JSON.stringify(a.shopifyVariants||[]),
+            sale: JSON.stringify(a.sale||null),
+            posted: JSON.stringify(a.posted||[])
+          };
+        })})
       });
-      setSyncStatus('✓ Saved to cloud');
+      setSyncStatus('✓ Saved');
       setTimeout(() => setSyncStatus(''), 3000);
-    } catch (e) {
-      setSyncStatus('⚠️ Cloud save failed');
-    }
+    } catch { setSyncStatus('⚠️ Save failed'); }
   }, 1500);
 }
 
 async function pullFromSheets() {
-  setSyncStatus('☁️ Loading from cloud…');
+  setSyncStatus('☁️ Loading…');
   try {
     const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
     const data = await res.json();
     if (data.ok && data.data && data.data.length) {
       db.artworks = data.data.map(row => ({
-        id: parseInt(row.id) || 0,
-        title: row.title || '',
-        medium: row.medium || '',
-        size: row.size || '',
-        price: row.price || '',
-        status: row.status || 'available',
-        desc: row.desc || '',
-        etsy: row.etsy || '',
-        website: row.website || '',
-        photo: row.photo || '',
-        shopifyHandle: row.shopifyHandle || '',
-        shopifyImageSrc: row.shopifyImageSrc || '',
-        shopifyDesc: row.shopifyDesc || '',
-        shopifyTags: row.shopifyTags || '',
-        shopifyVendor: row.shopifyVendor || '',
-        shopifyType: row.shopifyType || '',
+        id: parseInt(row.id)||0, title: row.title||'', medium: row.medium||'',
+        size: row.size||'', price: row.price||'', status: row.status||'available',
+        desc: row.desc||'', etsy: row.etsy||'', website: row.website||'', photo: row.photo||'',
+        shopifyHandle: row.shopifyHandle||'', shopifyImageSrc: row.shopifyImageSrc||'',
+        shopifyDesc: row.shopifyDesc||'', shopifyTags: row.shopifyTags||'',
+        shopifyVendor: row.shopifyVendor||'', shopifyType: row.shopifyType||'',
         shopifyVariants: tryParse(row.shopifyVariants, []),
-        shopifyPublished: row.shopifyPublished || 'TRUE',
+        shopifyPublished: row.shopifyPublished||'TRUE',
+        seoTitle: row.seoTitle||'', seoDesc: row.seoDesc||'',
+        tags: row.tags||'', medium: row.medium||'', size: row.size||'',
+        etsy: row.etsy||'', buyer: row.buyer||'', saleDate: row.saleDate||'',
+        salePrice: row.salePrice||'', saleChannel: row.saleChannel||'',
         posted: tryParse(row.posted, []),
         sale: tryParse(row.sale, null),
-        addedAt: row.addedAt || Date.now()
+        addedAt: row.addedAt||Date.now()
       }));
-      db.nextId = Math.max(...db.artworks.map(a => a.id), 0) + 1;
+      db.nextId = Math.max(...db.artworks.map(a=>a.id),0)+1;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-      renderCatalog();
-      setSyncStatus('✓ Loaded from cloud');
+      renderSidebar();
+      setSyncStatus('✓ Loaded');
       setTimeout(() => setSyncStatus(''), 3000);
-    } else {
-      setSyncStatus('');
-    }
-  } catch (e) {
-    setSyncStatus('⚠️ Could not reach cloud');
-    setTimeout(() => setSyncStatus(''), 4000);
-  }
+    } else { setSyncStatus(''); }
+  } catch { setSyncStatus('⚠️ Offline'); setTimeout(()=>setSyncStatus(''),4000); }
 }
 
-function tryParse(val, fallback) {
-  try { return val ? JSON.parse(val) : fallback; } catch { return fallback; }
-}
-
-function setSyncStatus(msg) {
-  const el = document.getElementById('syncStatus');
-  if (el) el.textContent = msg;
-}
-function loadSettings() {
-  try { const r = localStorage.getItem(SETTINGS_KEY); return r ? JSON.parse(r) : { etsy:'', website:'', watermark:'© Jamie Morath Art' }; }
-  catch { return { etsy:'', website:'', watermark:'© Jamie Morath Art' }; }
-}
-function saveSettings() {
-  settings.etsy = document.getElementById('settingsEtsy').value;
-  settings.website = document.getElementById('settingsWebsite').value;
-  settings.watermark = document.getElementById('settingsWatermark').value;
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  toast('Settings saved');
-}
-function getApiKey() { return localStorage.getItem(API_KEY_STORE) || ''; }
+function tryParse(v, fb) { try { return v ? JSON.parse(v) : fb; } catch { return fb; } }
+function setSyncStatus(m) { const el=document.getElementById('syncStatus'); if(el) el.textContent=m; }
+function getApiKey() { return localStorage.getItem(API_KEY_STORE)||''; }
 function saveApiKey() {
   const k = document.getElementById('apiKeyInput').value.trim();
-  if (!k || k.startsWith('•')) return toast('Enter a valid API key');
+  if (!k || k.startsWith('•')) return;
   localStorage.setItem(API_KEY_STORE, k);
   document.getElementById('apiKeyStatus').textContent = '✓ Key saved';
-  toast('API key saved');
 }
 
-function showTab(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'captions') populateCaptionSelect();
-  if (name === 'tracker') renderTracker();
-  if (name === 'settings') loadSettingsForm();
-  if (name === 'shopify') renderShopifySummary();
-}
-
-function setFilter(f, el) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderCatalog();
-}
-
-function renderCatalog() {
-  const q = (document.getElementById('searchInput').value || '').toLowerCase();
-  const grid = document.getElementById('artGrid');
-  let arts = db.artworks;
-  if (currentFilter !== 'all') arts = arts.filter(a => a.status === currentFilter);
-  if (q) arts = arts.filter(a => (a.title + a.medium + a.desc).toLowerCase().includes(q));
-  if (!arts.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">🖼️</div><p>No artwork found.<br>Tap "+ Add Artwork" to get started.</p></div>`;
-    return;
-  }
-  grid.innerHTML = arts.map(a => `
-    <div class="art-card" onclick="openDetail(${a.id})">
-      <div class="art-thumb">${(a.photo||a.shopifyImageSrc) ? `<img src="${a.photo||a.shopifyImageSrc}" loading="lazy" onerror="this.style.display='none'">` : '🖼️'}</div>
-      <div class="art-info">
-        <div class="title">${a.title}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="price">${a.price ? '$'+parseFloat(a.price).toFixed(2) : ''}</div>
-          <span class="badge badge-${a.status}">${statusLabel(a.status)}</span>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function statusLabel(s) {
-  return {available:'Available',sold:'Sold',reserved:'Reserved',nfs:'NFS',wip:'WIP'}[s] || s;
-}
-
-function openAddModal() {
-  document.getElementById('addModalTitle').textContent = 'Add Artwork';
-  ['editId','artTitle','artMedium','artSize','artPrice','artDesc','artEtsy','artWebsite','artPhotoData'].forEach(id => {
-    document.getElementById(id).value = '';
+// ── TABS ──
+function switchTab(name) {
+  currentTab = name;
+  ['catalog','shopify','tracker'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+    document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===name ? '' : 'none';
   });
-  document.getElementById('artStatus').value = 'available';
-  document.getElementById('artPhotoPreview').style.display = 'none';
-  document.getElementById('artPhotoPrompt').style.display = 'block';
-  document.getElementById('deleteArtBtn').style.display = 'none';
-  openModal('addModal');
+  if (name==='tracker') renderTracker();
 }
 
-function openEditModal(id) {
-  const a = db.artworks.find(x => x.id === id);
-  if (!a) return;
-  document.getElementById('addModalTitle').textContent = 'Edit Artwork';
-  document.getElementById('editId').value = id;
-  document.getElementById('artTitle').value = a.title;
-  document.getElementById('artMedium').value = a.medium || '';
-  document.getElementById('artSize').value = a.size || '';
-  document.getElementById('artPrice').value = a.price || '';
-  document.getElementById('artStatus').value = a.status || 'available';
-  document.getElementById('artDesc').value = a.desc || '';
-  document.getElementById('artEtsy').value = a.etsy || '';
-  document.getElementById('artWebsite').value = a.website || '';
-  document.getElementById('artPhotoData').value = a.photo || '';
-  if (a.photo) {
-    document.getElementById('artPhotoPreview').src = a.photo;
-    document.getElementById('artPhotoPreview').style.display = 'block';
-    document.getElementById('artPhotoPrompt').style.display = 'none';
-  } else {
-    document.getElementById('artPhotoPreview').style.display = 'none';
-    document.getElementById('artPhotoPrompt').style.display = 'block';
-  }
-  document.getElementById('deleteArtBtn').style.display = 'block';
-  openModal('addModal');
-}
-
-function loadArtPhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const max = 800;
-      let w = img.width, h = img.height;
-      if (w > max || h > max) { if (w > h) { h = h * max / w; w = max; } else { w = w * max / h; h = max; } }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const data = canvas.toDataURL('image/jpeg', 0.75);
-      document.getElementById('artPhotoData').value = data;
-      document.getElementById('artPhotoPreview').src = data;
-      document.getElementById('artPhotoPreview').style.display = 'block';
-      document.getElementById('artPhotoPrompt').style.display = 'none';
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function saveArtwork() {
-  const title = document.getElementById('artTitle').value.trim();
-  if (!title) return toast('Title is required');
-  const editId = document.getElementById('editId').value;
-  const existing = editId ? db.artworks.find(x => x.id === parseInt(editId)) : null;
-  const art = {
-    id: editId ? parseInt(editId) : db.nextId++,
-    title,
-    medium: document.getElementById('artMedium').value.trim(),
-    size: document.getElementById('artSize').value.trim(),
-    price: document.getElementById('artPrice').value,
-    status: document.getElementById('artStatus').value,
-    desc: document.getElementById('artDesc').value.trim(),
-    etsy: document.getElementById('artEtsy').value.trim(),
-    website: document.getElementById('artWebsite').value.trim(),
-    photo: document.getElementById('artPhotoData').value,
-    posted: existing?.posted || [],
-    sale: existing?.sale || null,
-    addedAt: existing?.addedAt || Date.now(),
-  };
-  if (editId) { const idx = db.artworks.findIndex(x => x.id === parseInt(editId)); db.artworks[idx] = art; }
-  else { db.artworks.unshift(art); }
-  saveDb(); closeModal('addModal'); renderCatalog();
-  toast(editId ? 'Artwork updated' : 'Artwork added');
-}
-
-function deleteArtwork() {
-  const id = parseInt(document.getElementById('editId').value);
-  if (!confirm('Delete this artwork?')) return;
-  db.artworks = db.artworks.filter(a => a.id !== id);
-  saveDb(); closeModal('addModal'); renderCatalog(); toast('Artwork deleted');
-}
-
-function openDetail(id) {
-  const a = db.artworks.find(x => x.id === id);
-  if (!a) return;
-  currentDetailId = id;
-  document.getElementById('detailTitle').textContent = a.title;
-  const displayPhoto = a.photo || a.shopifyImageSrc || '';
-  if (displayPhoto) {
-    document.getElementById('detailImg').src = displayPhoto;
-    document.getElementById('detailImg').style.display = 'block';
-    document.getElementById('detailNoImg').style.display = 'none';
-  } else {
-    document.getElementById('detailImg').style.display = 'none';
-    document.getElementById('detailNoImg').style.display = 'flex';
-  }
-  document.getElementById('detailBadge').innerHTML = `<span class="badge badge-${a.status}">${statusLabel(a.status)}</span>`;
-  document.getElementById('detailMeta').textContent = [a.medium, a.size].filter(Boolean).join(' · ');
-  document.getElementById('detailPrice').textContent = a.price ? '$' + parseFloat(a.price).toFixed(2) : '';
-  document.getElementById('detailDesc').textContent = a.desc || '';
-  const links = [];
-  if (a.etsy) links.push(`<a href="${a.etsy}" target="_blank" style="color:var(--gold);font-size:12px;margin-right:12px">🛍 Etsy</a>`);
-  if (a.website) links.push(`<a href="${a.website}" target="_blank" style="color:var(--gold);font-size:12px">🌐 Website</a>`);
-  document.getElementById('detailLinks').innerHTML = links.join('');
-  if (a.sale) {
-    document.getElementById('detailSaleInfo').innerHTML = `
-      <div class="card" style="background:rgba(46,204,113,0.07);border-color:rgba(46,204,113,0.2);margin:0">
-        <div style="color:#2ecc71;font-size:11px;margin-bottom:4px">💰 SOLD</div>
-        <div style="font-size:12px;line-height:1.7">
-          ${a.sale.buyer ? 'Buyer: '+a.sale.buyer+'<br>' : ''}
-          Channel: ${a.sale.channel}<br>
-          ${a.sale.price ? 'Price: $'+parseFloat(a.sale.price).toFixed(2)+'<br>' : ''}
-          Date: ${a.sale.date || '—'}
-          ${a.sale.notes ? '<br>'+a.sale.notes : ''}
-        </div>
-      </div>`;
-    document.getElementById('recordSaleBtn').textContent = '✏️ Edit Sale';
-  } else {
-    document.getElementById('detailSaleInfo').innerHTML = '';
-    document.getElementById('recordSaleBtn').textContent = '💰 Record Sale';
-  }
-  openModal('detailModal');
-}
-
-function editFromDetail() { closeModal('detailModal'); setTimeout(() => openEditModal(currentDetailId), 150); }
-
-function openSaleModal() {
-  const a = db.artworks.find(x => x.id === currentDetailId);
-  if (!a) return;
-  document.getElementById('saleBuyer').value = a.sale?.buyer || '';
-  document.getElementById('saleDate').value = a.sale?.date || new Date().toISOString().split('T')[0];
-  document.getElementById('salePrice').value = a.sale?.price || a.price || '';
-  document.getElementById('saleChannel').value = a.sale?.channel || 'Etsy';
-  document.getElementById('saleNotes').value = a.sale?.notes || '';
-  closeModal('detailModal'); setTimeout(() => openModal('saleModal'), 150);
-}
-
-function saveSale() {
-  const a = db.artworks.find(x => x.id === currentDetailId);
-  if (!a) return;
-  a.sale = {
-    buyer: document.getElementById('saleBuyer').value.trim(),
-    date: document.getElementById('saleDate').value,
-    price: document.getElementById('salePrice').value,
-    channel: document.getElementById('saleChannel').value,
-    notes: document.getElementById('saleNotes').value.trim(),
-    at: Date.now()
-  };
-  a.status = 'sold';
-  saveDb(); closeModal('saleModal'); renderCatalog(); toast('Sale recorded');
-}
-
-function populateCaptionSelect() {
-  const sel = document.getElementById('captionArtSelect');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">— choose a piece —</option>' +
-    db.artworks.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
-  if (cur) sel.value = cur;
-  updateCaptionArt();
-}
-
-function updateCaptionArt() {
-  const id = parseInt(document.getElementById('captionArtSelect').value);
-  const a = db.artworks.find(x => x.id === id);
-  const preview = document.getElementById('captionArtPreview');
-  const result = document.getElementById('captionResultCard');
-  if (!a) { preview.style.display = 'none'; result.style.display = 'none'; return; }
-  preview.style.display = 'block';
-  document.getElementById('captionThumb').innerHTML = a.photo ? `<img src="${a.photo}" style="width:100%;height:100%;object-fit:cover">` : '🖼️';
-  document.getElementById('captionArtTitle').textContent = a.title;
-  document.getElementById('captionArtMeta').textContent = [a.medium, a.size].filter(Boolean).join(' · ');
-  document.getElementById('captionArtPrice').textContent = a.price ? '$' + parseFloat(a.price).toFixed(2) : '';
-  document.getElementById('postedPlatforms').innerHTML = PLATFORMS.map(p => {
-    const checked = (a.posted || []).includes(p);
-    return `<div class="platform-item ${checked?'checked':''}" onclick="togglePlatform(${a.id},'${p}',this)">
-      <input type="checkbox" ${checked?'checked':''}> ${p}</div>`;
+// ── SIDEBAR ──
+function renderSidebar() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  let arts = db.artworks;
+  if (q) arts = arts.filter(a => (a.title||'').toLowerCase().includes(q));
+  document.getElementById('sidebarCount').textContent = arts.length + ' products';
+  document.getElementById('headerCount').textContent = db.artworks.length + ' products';
+  const list = document.getElementById('sidebarList');
+  if (!arts.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No products found</div>'; return; }
+  list.innerHTML = arts.map(a => {
+    const img = a.photo||a.shopifyImageSrc||'';
+    const done = (a.desc||a.shopifyDesc) ? 'done' : 'todo';
+    return `<div class="sidebar-item ${currentId===a.id?'active':''}" onclick="selectProduct(${a.id})">
+      <div class="sidebar-thumb">${img ? `<img src="${img}" onerror="this.style.display='none'">` : '🖼️'}</div>
+      <div>
+        <div class="sidebar-name">${a.title||'Untitled'}</div>
+        <span class="sidebar-badge badge-${done}">${done==='done'?'Done':'To Do'}</span>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function togglePlatform(id, platform, el) {
-  const a = db.artworks.find(x => x.id === id);
+// ── SELECT PRODUCT ──
+function selectProduct(id) {
+  currentId = id;
+  const a = db.artworks.find(x=>x.id===id);
   if (!a) return;
-  if (!a.posted) a.posted = [];
-  if (a.posted.includes(platform)) { a.posted = a.posted.filter(p => p !== platform); el.classList.remove('checked'); }
-  else { a.posted.push(platform); el.classList.add('checked'); }
-  saveDb();
+  renderSidebar();
+  document.getElementById('panelEmpty').style.display = 'none';
+  document.getElementById('panelDetail').style.display = 'block';
+
+  // Header
+  const img = a.photo||a.shopifyImageSrc||'';
+  document.getElementById('detailThumb').innerHTML = img ? `<img src="${img}" onerror="this.style.display='none'">` : '🖼️';
+  document.getElementById('detailTitle').textContent = a.title||'Untitled';
+  document.getElementById('detailHandle').textContent = 'Handle: '+(a.shopifyHandle||'');
+
+  // Fields
+  document.getElementById('editTitle').value = a.title||'';
+  document.getElementById('editStatus').value = a.status||'available';
+  document.getElementById('editPrice').value = a.price||'';
+  document.getElementById('editMedium').value = a.medium||'';
+  document.getElementById('editSize').value = a.size||'';
+  document.getElementById('editTags').value = a.tags||a.shopifyTags||'';
+  document.getElementById('editEtsy').value = a.etsy||'';
+  document.getElementById('editDesc').value = a.desc||a.shopifyDesc||'';
+  document.getElementById('editSeoTitle').value = a.seoTitle||'';
+  document.getElementById('editSeoDesc').value = a.seoDesc||'';
+  document.getElementById('editBuyer').value = a.buyer||a.sale?.buyer||'';
+  document.getElementById('editSaleDate').value = a.saleDate||a.sale?.date||'';
+  document.getElementById('editSalePrice').value = a.salePrice||a.sale?.price||'';
+  document.getElementById('editSaleChannel').value = a.saleChannel||a.sale?.channel||'Etsy';
+  document.getElementById('genStatus').textContent = '';
 }
 
-async function generateCaption() {
-  const id = parseInt(document.getElementById('captionArtSelect').value);
-  const a = db.artworks.find(x => x.id === id);
-  if (!a) return toast('Select an artwork first');
-  const style = document.getElementById('captionStyle').value;
-  const platform = document.getElementById('captionPlatform').value;
-  const resultCard = document.getElementById('captionResultCard');
-  const output = document.getElementById('captionOutput');
-  resultCard.style.display = 'block';
+// ── SAVE PRODUCT ──
+function saveProduct() {
+  const a = db.artworks.find(x=>x.id===currentId);
+  if (!a) return;
+  a.title = document.getElementById('editTitle').value.trim();
+  a.status = document.getElementById('editStatus').value;
+  a.price = document.getElementById('editPrice').value;
+  a.medium = document.getElementById('editMedium').value.trim();
+  a.size = document.getElementById('editSize').value.trim();
+  a.tags = document.getElementById('editTags').value.trim();
+  a.etsy = document.getElementById('editEtsy').value.trim();
+  a.desc = document.getElementById('editDesc').value.trim();
+  a.seoTitle = document.getElementById('editSeoTitle').value.trim();
+  a.seoDesc = document.getElementById('editSeoDesc').value.trim();
+  a.buyer = document.getElementById('editBuyer').value.trim();
+  a.saleDate = document.getElementById('editSaleDate').value.trim();
+  a.salePrice = document.getElementById('editSalePrice').value;
+  a.saleChannel = document.getElementById('editSaleChannel').value;
+  // Update header
+  document.getElementById('detailTitle').textContent = a.title;
+  saveDb(); renderSidebar(); toast('Saved!');
+}
+
+function revertProduct() { selectProduct(currentId); toast('Reverted'); }
+
+// ── AI GENERATE ──
+async function generateDescription() {
+  const a = db.artworks.find(x=>x.id===currentId);
+  if (!a) return;
   const apiKey = getApiKey();
-  if (!apiKey) {
-    output.innerHTML = '<span class="caption-loading">No API key — using template…</span>';
-    setTimeout(() => { output.textContent = templateCaption(a, style); }, 500);
-    return;
-  }
-  output.innerHTML = '<span class="caption-loading">✨ Writing caption…</span>';
-  document.getElementById('genCaptionBtn').disabled = true;
-  const links = [];
-  if (a.etsy) links.push('Etsy: ' + a.etsy);
-  if (a.website) links.push('Website: ' + a.website);
-  if (settings.etsy) links.push('Shop: ' + settings.etsy);
-  const prompt = `Write a ${style} social media caption for ${platform} for this artwork:
-Title: "${a.title}"
-Medium: ${a.medium || 'not specified'}
-Size: ${a.size || 'not specified'}
-Price: ${a.price ? '$'+a.price : 'not listed'}
-Description: ${a.desc || 'none'}
-${links.length ? 'Links: ' + links.join(', ') : ''}
+  const btn = document.getElementById('genDescBtn');
+  const status = document.getElementById('genStatus');
+  if (!apiKey) { status.textContent = '⚠️ No API key — go to Settings'; return; }
+  btn.disabled = true;
+  status.textContent = '✨ Generating…';
+  const title = document.getElementById('editTitle').value||a.title;
+  const medium = document.getElementById('editMedium').value;
+  const size = document.getElementById('editSize').value;
+  const tags = document.getElementById('editTags').value;
+  const prompt = `Write a compelling Shopify product description for this art print:
+Title: "${title}"
+Medium: ${medium||'mixed media'}
+Original size: ${size||'various'}
+Tags/theme: ${tags||'pet art, animal art'}
 
-Style guide:
-- story: emotional, personal, share the inspiration behind the piece
-- minimal: clean, 2-3 lines, let the art speak
-- sale: clear call to action, mention availability, where to buy
-- hashtag: include 15+ relevant hashtags for art, pet art, dog art, collectors
-
-Write only the caption. Authentic voice, not corporate. Include emojis. End with hashtags unless minimal style.`;
+Write 2-3 paragraphs. Make it warm, personal, and appealing to art buyers and pet lovers. 
+Mention it's available as a print in multiple sizes. No bullet points. 
+Then on a new line write: SEO_TITLE: [a good SEO title under 60 chars]
+Then: SEO_DESC: [a good meta description under 160 chars]`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, messages: [{ role: 'user', content: prompt }] })
+      headers: { 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, messages:[{role:'user',content:prompt}] })
     });
     const data = await res.json();
-    output.textContent = data.content?.[0]?.text || templateCaption(a, style);
-  } catch { output.textContent = templateCaption(a, style); toast('Connection error — used template'); }
-  document.getElementById('genCaptionBtn').disabled = false;
+    const text = data.content?.[0]?.text||'';
+    const seoTitleMatch = text.match(/SEO_TITLE:\s*(.+)/);
+    const seoDescMatch = text.match(/SEO_DESC:\s*(.+)/);
+    const desc = text.replace(/SEO_TITLE:.+/s,'').trim();
+    document.getElementById('editDesc').value = desc;
+    if (seoTitleMatch) document.getElementById('editSeoTitle').value = seoTitleMatch[1].trim();
+    if (seoDescMatch) document.getElementById('editSeoDesc').value = seoDescMatch[1].trim();
+    status.textContent = '✓ Generated — review and save';
+  } catch(e) { status.textContent = '⚠️ Error: '+e.message; }
+  btn.disabled = false;
 }
 
-function templateCaption(a, style) {
-  const price = a.price ? `$${parseFloat(a.price).toFixed(2)}` : '';
-  const meta = [a.medium, a.size].filter(Boolean).join(', ');
-  const tags = '\n\n#artforsale #originalart #wallart #petart #dogart #artcollector #jamiemorathart #shopsmall #homedecor #artprint';
-  if (style === 'minimal') return `"${a.title}"\n${meta}${price ? '\n'+price : ''}`;
-  if (style === 'sale') return `✨ "${a.title}" is available now!\n\n${meta}${price ? ' · '+price : ''}\n\nTap the link in bio to shop 🛍️${tags}`;
-  if (style === 'hashtag') return `🎨 "${a.title}" — ${meta}${price ? ' · '+price : ''}${tags} #originalpainting #artoftheday #supportartists #handmade #prints #giftideas #artlovers`;
-  return `Every piece starts with a feeling. "${a.title}" — ${a.desc || 'a little moment captured in paint'}.\n\n${meta}${price ? ' · '+price : ''}${tags}`;
-}
-
-function copyCaption() {
-  const text = document.getElementById('captionOutput').textContent;
-  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(() => toast('Copied!')).catch(() => fallbackCopy(text)); }
-  else fallbackCopy(text);
-}
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-  document.execCommand('copy'); document.body.removeChild(ta); toast('Copied!');
-}
-
-function renderTracker() {
-  const arts = db.artworks;
-  const sold = arts.filter(a => a.status === 'sold');
-  const revenue = sold.reduce((s, a) => s + (parseFloat(a.sale?.price || a.price) || 0), 0);
-  const available = arts.filter(a => a.status === 'available').length;
-  document.getElementById('statsGrid').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${arts.length}</div><div class="stat-label">Total Pieces</div></div>
-    <div class="stat-card"><div class="stat-num">${sold.length}</div><div class="stat-label">Sold</div></div>
-    <div class="stat-card"><div class="stat-num">${available}</div><div class="stat-label">Available</div></div>
-    <div class="stat-card"><div class="stat-num">$${revenue.toFixed(0)}</div><div class="stat-label">Revenue</div></div>`;
-  const channels = {};
-  sold.forEach(a => { const ch = a.sale?.channel || 'Other'; channels[ch] = (channels[ch] || 0) + 1; });
-  const maxC = Math.max(...Object.values(channels), 1);
-  const cbEl = document.getElementById('channelBars');
-  cbEl.innerHTML = Object.keys(channels).length ? Object.entries(channels).sort((a,b)=>b[1]-a[1]).map(([ch,n]) => `
-    <div class="channel-bar">
-      <div class="channel-name">${ch}</div>
-      <div class="channel-fill-bg"><div class="channel-fill" style="width:${n/maxC*100}%"></div></div>
-      <div class="channel-count">${n}</div>
-    </div>`).join('') : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No sales recorded yet</div>';
-  const recent = [...arts].filter(a => a.sale || a.addedAt).sort((a,b) => (b.sale?.at||b.addedAt||0)-(a.sale?.at||a.addedAt||0)).slice(0,8);
-  document.getElementById('recentActivity').innerHTML = recent.length ? recent.map(a => {
-    const isSale = !!a.sale;
-    const date = isSale ? a.sale.date : (a.addedAt ? new Date(a.addedAt).toLocaleDateString() : '');
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div><div style="font-size:12px;color:var(--cream)">${a.title}</div>
-      <div style="font-size:10px;color:var(--muted)">${isSale ? '💰 Sold via '+a.sale.channel : '➕ Added'}</div></div>
-      <div style="font-size:11px;color:var(--muted)">${date}</div></div>`;
-  }).join('') : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No activity yet</div>';
-}
-
-function setWmPos(pos) {
-  wmPos = pos;
-  ['bl','br','tl','c'].forEach(p => {
-    document.getElementById('wmPos-'+p).className = 'btn ' + (p === pos ? 'btn-gold' : 'btn-outline');
+function copyDesc() {
+  const t = document.getElementById('editDesc').value;
+  navigator.clipboard?.writeText(t).then(()=>toast('Copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copied!');
   });
 }
 
-function loadWmPhoto(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    wmPhotoData = e.target.result;
-    document.getElementById('wmPreviewImg').src = wmPhotoData;
-    document.getElementById('wmPreviewImg').style.display = 'block';
-    document.getElementById('wmUploadPrompt').style.display = 'none';
-    document.getElementById('wmApplyBtn').disabled = false;
-    document.getElementById('wmResultCard').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-}
-
-function applyWatermark() {
-  if (!wmPhotoData) return;
-  const text = document.getElementById('wmText').value || settings.watermark || '© Jamie Morath Art';
-  const opacity = parseInt(document.getElementById('wmOpacity').value) / 100;
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.getElementById('wmCanvas');
-    canvas.width = img.width; canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const fontSize = Math.max(16, img.width * 0.035);
-    ctx.font = `${fontSize}px serif`;
-    ctx.fillStyle = `rgba(255,255,255,${opacity})`;
-    ctx.shadowColor = `rgba(0,0,0,${opacity})`;
-    ctx.shadowBlur = 4;
-    const pad = fontSize * 0.8;
-    let x, y;
-    if (wmPos==='bl') { x=pad; y=img.height-pad; ctx.textAlign='left'; }
-    else if (wmPos==='br') { x=img.width-pad; y=img.height-pad; ctx.textAlign='right'; }
-    else if (wmPos==='tl') { x=pad; y=pad+fontSize; ctx.textAlign='left'; }
-    else { x=img.width/2; y=img.height/2; ctx.textAlign='center'; }
-    ctx.fillText(text, x, y);
-    const result = canvas.toDataURL('image/jpeg', 0.92);
-    document.getElementById('wmResultImg').src = result;
-    document.getElementById('wmDownloadLink').href = result;
-    document.getElementById('wmResultCard').style.display = 'block';
-  };
-  img.src = wmPhotoData;
-}
-
-function loadSettingsForm() {
-  document.getElementById('settingsEtsy').value = settings.etsy || '';
-  document.getElementById('settingsWebsite').value = settings.website || '';
-  document.getElementById('settingsWatermark').value = settings.watermark || '© Jamie Morath Art';
-  const key = getApiKey();
-  document.getElementById('apiKeyInput').value = key ? '••••••••••••••••' : '';
-  document.getElementById('apiKeyStatus').textContent = key ? '✓ API key is set' : 'No API key saved';
-}
-
-function exportBackup() {
-  const data = JSON.stringify({ db, settings, exportedAt: new Date().toISOString() }, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = `jamie-art-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
-  toast('Backup downloaded');
-}
-
-function importBackup(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.db) { db = data.db; saveDb(); }
-      if (data.settings) { settings = data.settings; localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-      renderCatalog(); toast('Backup imported!');
-    } catch { toast('Invalid backup file'); }
-  };
-  reader.readAsText(file);
-}
-
-function resetAllData() {
-  if (!confirm('Delete ALL artwork data? This cannot be undone.')) return;
-  if (!confirm('Are you sure?')) return;
-  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SETTINGS_KEY);
-  db = { artworks: [], nextId: 1 }; settings = { etsy:'', website:'', watermark:'© Jamie Morath Art' };
-  renderCatalog(); toast('All data cleared');
-}
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-});
-
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-renderCatalog();
-pullFromSheets();
-
-// ══════════════════════════════════════════════
-// CSV PARSER
-// ══════════════════════════════════════════════
+// ── CSV PARSER ──
 function parseCSV(text) {
-  const rows = [];
-  let row = [], field = '', inQuote = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i], next = text[i+1];
-    if (inQuote) {
-      if (ch === '"' && next === '"') { field += '"'; i++; }
-      else if (ch === '"') { inQuote = false; }
-      else { field += ch; }
-    } else {
-      if (ch === '"') { inQuote = true; }
-      else if (ch === ',') { row.push(field); field = ''; }
-      else if (ch === '\n' || (ch === '\r' && next === '\n')) {
-        if (ch === '\r') i++;
-        row.push(field); field = '';
-        if (row.some(f => f !== '')) rows.push(row);
-        row = [];
-      } else { field += ch; }
-    }
+  const rows=[]; let row=[],field='',inQuote=false;
+  for (let i=0;i<text.length;i++) {
+    const ch=text[i],nx=text[i+1];
+    if (inQuote) { if(ch==='"'&&nx==='"'){field+='"';i++;}else if(ch==='"'){inQuote=false;}else{field+=ch;} }
+    else { if(ch==='"'){inQuote=true;}else if(ch===','){row.push(field);field='';}else if(ch==='\n'||(ch==='\r'&&nx==='\n')){if(ch==='\r')i++;row.push(field);field='';if(row.some(f=>f!==''))rows.push(row);row=[];}else{field+=ch;} }
   }
-  if (field || row.length) { row.push(field); if (row.some(f => f !== '')) rows.push(row); }
+  if(field||row.length){row.push(field);if(row.some(f=>f!==''))rows.push(row);}
   return rows;
 }
 
 function normalizeVariant(v) {
-  v = (v || '').trim().toLowerCase();
-  if (v.includes('16x20') || v.includes('16x 20')) return '16x20 Matte 11x14 Print';
-  if (v.includes('11x14') && v.includes('matte')) return '11x14 Matte 8x10 Print';
-  if (v.includes('8x10') && v.includes('matte')) return '8x10 Matte 5x7 Print';
-  if (v.includes('11x14')) return '11x14 Print';
-  if (v.includes('8x10')) return '8x10 Print';
-  if (v.includes('5x7')) return '5x7 Print';
-  if (v.includes('10x10')) return '10x10 Print';
-  if (v.includes('12x12')) return '12x12 Print';
-  if (v.includes('8x8')) return '8x8 Print';
-  if (v.includes('6x6')) return '6x6 Print';
+  v=(v||'').trim().toLowerCase();
+  if(v.includes('16x20'))return '16x20 Matte 11x14 Print';
+  if(v.includes('11x14')&&v.includes('matte'))return '11x14 Matte 8x10 Print';
+  if(v.includes('8x10')&&v.includes('matte'))return '8x10 Matte 5x7 Print';
+  if(v.includes('11x14'))return '11x14 Print';
+  if(v.includes('8x10'))return '8x10 Print';
+  if(v.includes('5x7'))return '5x7 Print';
+  if(v.includes('10x10'))return '10x10 Print';
+  if(v.includes('12x12'))return '12x12 Print';
+  if(v.includes('8x8'))return '8x8 Print';
+  if(v.includes('6x6'))return '6x6 Print';
   return v;
 }
 
-const VARIANT_PRICES = {
-  '5x7 Print':'38.00','8x10 Print':'45.00','11x14 Print':'75.00',
-  '8x10 Matte 5x7 Print':'45.00','11x14 Matte 8x10 Print':'75.00','16x20 Matte 11x14 Print':'113.00',
-  '6x6 Print':'38.00','8x8 Print':'45.00','10x10 Print':'75.00','12x12 Print':'113.00'
-};
-
-const STANDARD_VARIANTS = ['5x7 Print','8x10 Print','11x14 Print','8x10 Matte 5x7 Print','11x14 Matte 8x10 Print','16x20 Matte 11x14 Print'];
-
-// ══════════════════════════════════════════════
-// SHOPIFY IMPORT
-// ══════════════════════════════════════════════
+// ── SHOPIFY IMPORT ──
 function importShopifyCSV(input) {
-  const file = input.files[0];
-  if (!file) return;
-  document.getElementById('importProgress').style.display = 'block';
-  document.getElementById('importResult').style.display = 'none';
-  document.getElementById('importBar').style.width = '10%';
-  document.getElementById('importStatus').textContent = 'Reading file…';
-
-  const reader = new FileReader();
-  reader.onload = e => {
+  const file=input.files[0]; if(!file)return;
+  document.getElementById('importProgress').style.display='block';
+  document.getElementById('importResult').style.display='none';
+  document.getElementById('importBar').style.width='5%';
+  document.getElementById('importStatus').textContent='Reading file…';
+  const reader=new FileReader();
+  reader.onload=e=>{
     try {
-      const rows = parseCSV(e.target.result);
-      if (rows.length < 2) return toast('CSV appears empty');
-      const headers = rows[0].map(h => h.trim());
-      document.getElementById('importBar').style.width = '30%';
-      document.getElementById('importStatus').textContent = 'Parsing products…';
-
-      const hi = k => headers.indexOf(k);
-      const products = {};
-
-      rows.slice(1).forEach(row => {
-        const get = k => (row[hi(k)] || '').trim();
-        const handle = get('Handle');
-        if (!handle) return;
-        if (!products[handle]) {
-          products[handle] = {
-            handle,
-            title: get('Title') || products[handle]?.title || '',
-            desc: get('Body (HTML)') || '',
-            vendor: get('Vendor') || 'Jamie Morath Art',
-            type: get('Type') || 'Art Print',
-            tags: get('Tags') || '',
-            published: get('Published') || 'TRUE',
-            imageSrc: '',
-            variants: []
-          };
+      const rows=parseCSV(e.target.result);
+      if(rows.length<2)return toast('CSV appears empty');
+      const headers=rows[0].map(h=>h.trim());
+      const hi=k=>headers.indexOf(k);
+      document.getElementById('importBar').style.width='30%';
+      document.getElementById('importStatus').textContent='Parsing products…';
+      const products={};
+      rows.slice(1).forEach(row=>{
+        const get=k=>(row[hi(k)]||'').trim();
+        const handle=get('Handle'); if(!handle)return;
+        if(!products[handle]){
+          products[handle]={handle,title:'',desc:'',vendor:'Jamie Morath Art',type:'Art Print',tags:'',published:'TRUE',imageSrc:'',variants:[]};
         }
-        // Grab first image
-        const imgSrc = get('Image Src') || get('Variant Image') || '';
-        if (imgSrc && !products[handle].imageSrc) products[handle].imageSrc = imgSrc;
-        // Update title/desc if this row has them
-        if (get('Title')) products[handle].title = get('Title');
-        if (get('Body (HTML)')) products[handle].desc = get('Body (HTML)');
-        // Variants
-        const opt1 = normalizeVariant(get('Option1 Value') || get('Option1 value'));
-        if (opt1 && !products[handle].variants.find(v => v.name === opt1)) {
-          products[handle].variants.push({
-            name: opt1,
-            price: get('Variant Price') || get('Price') || VARIANT_PRICES[opt1] || '38.00',
-            sku: get('Variant SKU') || '',
-            qty: get('Variant Inventory Qty') || get('Inventory quantity') || '2'
-          });
+        if(get('Title'))products[handle].title=get('Title');
+        if(get('Body (HTML)'))products[handle].desc=get('Body (HTML)');
+        if(get('Tags'))products[handle].tags=get('Tags');
+        if(get('Vendor'))products[handle].vendor=get('Vendor');
+        if(get('Type'))products[handle].type=get('Type');
+        if(get('Published'))products[handle].published=get('Published');
+        const imgSrc=get('Image Src');
+        if(imgSrc&&!products[handle].imageSrc)products[handle].imageSrc=imgSrc;
+        const opt1=normalizeVariant(get('Option1 Value')||get('Option1 value'));
+        if(opt1&&!products[handle].variants.find(v=>v.name===opt1)){
+          products[handle].variants.push({name:opt1,price:get('Variant Price')||get('Price')||VARIANT_PRICES[opt1]||'38.00',sku:get('Variant SKU')||'',qty:get('Variant Inventory Qty')||'2'});
         }
       });
-
-      document.getElementById('importBar').style.width = '60%';
-      document.getElementById('importStatus').textContent = 'Importing into catalog…';
-
-      let added = 0, updated = 0;
-      const productList = Object.values(products);
-
-      productList.forEach(p => {
-        const existing = db.artworks.find(a => a.shopifyHandle === p.handle);
-        if (existing) {
-          // Update existing — preserve local edits to photo/sale/posted
-          existing.title = p.title || existing.title;
-          existing.desc = existing.desc || p.desc; // keep local desc if already edited
-          existing.shopifyDesc = p.desc; // always store original shopify desc
-          existing.shopifyImageSrc = p.imageSrc || existing.shopifyImageSrc;
-          existing.shopifyTags = p.tags;
-          existing.shopifyVendor = p.vendor;
-          existing.shopifyType = p.type;
-          existing.shopifyVariants = p.variants;
-          existing.shopifyPublished = p.published;
+      document.getElementById('importBar').style.width='70%';
+      document.getElementById('importStatus').textContent='Saving to catalog…';
+      let added=0,updated=0;
+      Object.values(products).forEach(p=>{
+        const existing=db.artworks.find(a=>a.shopifyHandle===p.handle);
+        if(existing){
+          existing.title=p.title||existing.title;
+          existing.shopifyDesc=p.desc;
+          existing.shopifyImageSrc=p.imageSrc||existing.shopifyImageSrc;
+          existing.shopifyTags=p.tags; existing.shopifyVendor=p.vendor;
+          existing.shopifyType=p.type; existing.shopifyVariants=p.variants;
+          existing.shopifyPublished=p.published;
+          if(!existing.desc)existing.desc=p.desc;
           updated++;
         } else {
           db.artworks.push({
-            id: db.nextId++,
-            title: p.title,
-            medium: '',
-            size: '',
-            price: p.variants[0]?.price || '',
-            status: 'available',
-            desc: p.desc,
-            shopifyDesc: p.desc,
-            shopifyHandle: p.handle,
-            shopifyImageSrc: p.imageSrc,
-            shopifyTags: p.tags,
-            shopifyVendor: p.vendor,
-            shopifyType: p.type,
-            shopifyVariants: p.variants,
-            shopifyPublished: p.published,
-            etsy: '', website: '', photo: '',
-            posted: [], sale: null,
-            addedAt: Date.now()
+            id:db.nextId++,title:p.title,medium:'',size:'',price:p.variants[0]?.price||'',
+            status:'available',desc:'',shopifyDesc:p.desc,shopifyHandle:p.handle,
+            shopifyImageSrc:p.imageSrc,shopifyTags:p.tags,shopifyVendor:p.vendor,
+            shopifyType:p.type,shopifyVariants:p.variants,shopifyPublished:p.published,
+            tags:p.tags,etsy:'',photo:'',seoTitle:'',seoDesc:'',
+            buyer:'',saleDate:'',salePrice:'',saleChannel:'',
+            posted:[],sale:null,addedAt:Date.now()
           });
           added++;
         }
       });
-
-      document.getElementById('importBar').style.width = '100%';
-      document.getElementById('importStatus').textContent = 'Done!';
-      saveDb();
-      renderCatalog();
-      renderShopifySummary();
-
-      const resultEl = document.getElementById('importResult');
-      resultEl.style.display = 'block';
-      resultEl.innerHTML = `<div style="color:var(--green)">✓ Import complete</div>
-        <div style="color:var(--muted);margin-top:4px">${added} new products added · ${updated} existing updated</div>`;
-      toast(`Imported ${added + updated} products`);
-    } catch(err) {
-      toast('Import error: ' + err.message);
-      document.getElementById('importStatus').textContent = 'Error: ' + err.message;
-    }
+      document.getElementById('importBar').style.width='100%';
+      document.getElementById('importStatus').textContent='Done!';
+      saveDb(); renderSidebar();
+      const r=document.getElementById('importResult');
+      r.style.display='block';
+      r.innerHTML=`<span style="color:var(--green)">✓ Import complete</span> — ${added} new · ${updated} updated`;
+      toast(`Imported ${added+updated} products`);
+    } catch(err) { toast('Import error: '+err.message); }
   };
   reader.readAsText(file);
 }
 
-// ══════════════════════════════════════════════
-// SHOPIFY EXPORT
-// ══════════════════════════════════════════════
+// ── SHOPIFY EXPORT ──
 function exportShopifyCSV() {
-  const filterVal = document.getElementById('exportFilter').value;
-  let arts = db.artworks;
-  if (filterVal !== 'all') arts = arts.filter(a => a.status === filterVal);
-  if (!arts.length) return toast('No products match the filter');
-
-  const statusEl = document.getElementById('exportStatus');
-  statusEl.textContent = 'Building CSV…';
-
-  const fields = [
-    'Handle','Title','Body (HTML)','Vendor','Product Category','Type','Tags','Published',
-    'Option1 Name','Option1 Value','Option1 Linked To',
-    'Option2 Name','Option2 Value','Option2 Linked To',
-    'Option3 Name','Option3 Value','Option3 Linked To',
-    'Variant SKU','Variant Grams','Variant Inventory Tracker',
-    'Variant Inventory Qty','Variant Inventory Policy',
+  const filterEl=document.getElementById('exportFilter');
+  const filterVal=filterEl?filterEl.value:'all';
+  let arts=db.artworks;
+  if(filterVal!=='all')arts=arts.filter(a=>a.status===filterVal);
+  if(!arts.length)return toast('No products to export');
+  const statusEl=document.getElementById('exportStatus');
+  if(statusEl)statusEl.textContent='Building CSV…';
+  const fields=['Handle','Title','Body (HTML)','Vendor','Product Category','Type','Tags','Published',
+    'Option1 Name','Option1 Value','Option1 Linked To','Option2 Name','Option2 Value','Option2 Linked To',
+    'Option3 Name','Option3 Value','Option3 Linked To','Variant SKU','Variant Grams',
+    'Variant Inventory Tracker','Variant Inventory Qty','Variant Inventory Policy',
     'Variant Fulfillment Service','Variant Price','Variant Compare At Price',
-    'Variant Requires Shipping','Variant Taxable',
-    'Image Src','Image Position','Image Alt Text','Variant Image',
-    'Gift Card','SEO Title','SEO Description','Google Shopping / Google Product Category',
-    'Status'
-  ];
-
-  const escCSV = v => {
-    const s = String(v || '');
-    return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-
-  const rows = [fields.map(escCSV).join(',')];
-
-  arts.forEach(a => {
-    const handle = a.shopifyHandle || a.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const variants = (a.shopifyVariants && a.shopifyVariants.length) ? a.shopifyVariants : STANDARD_VARIANTS.map(name => ({
-      name, price: VARIANT_PRICES[name] || '38.00', sku: '', qty: '2'
-    }));
-    const desc = a.desc || a.shopifyDesc || '';
-    const vendor = a.shopifyVendor || 'Jamie Morath Art';
-    const type = a.shopifyType || 'Art Print';
-    const tags = a.shopifyTags || '';
-    const published = a.shopifyPublished || 'TRUE';
-    const imgSrc = a.shopifyImageSrc || '';
-
-    variants.forEach((v, i) => {
-      const varName = typeof v === 'string' ? v : (v.name || v);
-      const varPrice = typeof v === 'object' ? (v.price || VARIANT_PRICES[varName] || '38.00') : (VARIANT_PRICES[varName] || '38.00');
-      const varSku = typeof v === 'object' ? (v.sku || '') : '';
-      const varQty = typeof v === 'object' ? (v.qty || '2') : '2';
-      const row = {
-        'Handle': handle,
-        'Title': i === 0 ? a.title : '',
-        'Body (HTML)': i === 0 ? desc : '',
-        'Vendor': i === 0 ? vendor : '',
-        'Product Category': i === 0 ? 'Arts & Entertainment > Hobbies & Creative Arts > Artwork' : '',
-        'Type': i === 0 ? type : '',
-        'Tags': i === 0 ? tags : '',
-        'Published': i === 0 ? published : '',
-        'Option1 Name': 'Size',
-        'Option1 Value': normalizeVariant(varName) || varName,
-        'Option1 Linked To': '',
-        'Option2 Name': '', 'Option2 Value': '', 'Option2 Linked To': '',
-        'Option3 Name': '', 'Option3 Value': '', 'Option3 Linked To': '',
-        'Variant SKU': varSku,
-        'Variant Grams': '150',
-        'Variant Inventory Tracker': 'shopify',
-        'Variant Inventory Qty': varQty,
-        'Variant Inventory Policy': 'deny',
-        'Variant Fulfillment Service': 'manual',
-        'Variant Price': varPrice,
-        'Variant Compare At Price': '',
-        'Variant Requires Shipping': 'TRUE',
-        'Variant Taxable': 'TRUE',
-        'Image Src': i === 0 ? imgSrc : '',
-        'Image Position': i === 0 ? '1' : '',
-        'Image Alt Text': i === 0 ? a.title : '',
-        'Variant Image': '',
-        'Gift Card': 'FALSE',
-        'SEO Title': i === 0 ? a.title : '',
-        'SEO Description': '',
-        'Google Shopping / Google Product Category': '',
-        'Status': 'active'
+    'Variant Requires Shipping','Variant Taxable','Image Src','Image Position','Image Alt Text',
+    'Variant Image','Gift Card','SEO Title','SEO Description',
+    'Google Shopping / Google Product Category','Status'];
+  const esc=v=>{const s=String(v||'');return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;};
+  const rows=[fields.map(esc).join(',')];
+  arts.forEach(a=>{
+    const handle=a.shopifyHandle||a.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    const variants=(a.shopifyVariants&&a.shopifyVariants.length)?a.shopifyVariants:STANDARD_VARIANTS.map(name=>({name,price:VARIANT_PRICES[name]||'38.00',sku:'',qty:'2'}));
+    const desc=a.desc||a.shopifyDesc||'';
+    variants.forEach((v,i)=>{
+      const vn=typeof v==='string'?v:(v.name||v);
+      const vp=typeof v==='object'?(v.price||VARIANT_PRICES[vn]||'38.00'):(VARIANT_PRICES[vn]||'38.00');
+      const vs=typeof v==='object'?(v.sku||''):'';
+      const vq=typeof v==='object'?(v.qty||'2'):'2';
+      const row={
+        'Handle':handle,'Title':i===0?a.title:'','Body (HTML)':i===0?desc:'',
+        'Vendor':i===0?(a.shopifyVendor||'Jamie Morath Art'):'',
+        'Product Category':i===0?'Arts & Entertainment > Hobbies & Creative Arts > Artwork':'',
+        'Type':i===0?(a.shopifyType||'Art Print'):'',
+        'Tags':i===0?(a.tags||a.shopifyTags||''):'',
+        'Published':i===0?(a.shopifyPublished||'TRUE'):'',
+        'Option1 Name':'Size','Option1 Value':normalizeVariant(vn)||vn,'Option1 Linked To':'',
+        'Option2 Name':'','Option2 Value':'','Option2 Linked To':'',
+        'Option3 Name':'','Option3 Value':'','Option3 Linked To':'',
+        'Variant SKU':vs,'Variant Grams':'150','Variant Inventory Tracker':'shopify',
+        'Variant Inventory Qty':vq,'Variant Inventory Policy':'deny',
+        'Variant Fulfillment Service':'manual','Variant Price':vp,'Variant Compare At Price':'',
+        'Variant Requires Shipping':'TRUE','Variant Taxable':'TRUE',
+        'Image Src':i===0?(a.shopifyImageSrc||''):'','Image Position':i===0?'1':'',
+        'Image Alt Text':i===0?a.title:'','Variant Image':'','Gift Card':'FALSE',
+        'SEO Title':i===0?(a.seoTitle||a.title):'',
+        'SEO Description':i===0?(a.seoDesc||''):'',
+        'Google Shopping / Google Product Category':'','Status':'active'
       };
-      rows.push(fields.map(f => escCSV(row[f])).join(','));
+      rows.push(fields.map(f=>esc(row[f])).join(','));
     });
   });
-
-  const csv = rows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'shopify-export-' + new Date().toISOString().split('T')[0] + '.csv';
+  const csv=rows.join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const link=document.createElement('a');
+  link.href=URL.createObjectURL(blob);
+  link.download='shopify-export-'+new Date().toISOString().split('T')[0]+'.csv';
   link.click();
-  statusEl.textContent = `✓ Exported ${arts.length} products (${rows.length - 1} rows)`;
+  if(statusEl)statusEl.textContent=`✓ Exported ${arts.length} products`;
   toast('Shopify CSV downloaded');
 }
 
-// ══════════════════════════════════════════════
-// SHOPIFY SUMMARY
-// ══════════════════════════════════════════════
-function renderShopifySummary() {
-  const arts = db.artworks;
-  const withHandle = arts.filter(a => a.shopifyHandle).length;
-  const withImg = arts.filter(a => a.shopifyImageSrc).length;
-  const withDesc = arts.filter(a => a.desc || a.shopifyDesc).length;
-  const el = document.getElementById('shopifySummary');
-  if (!el) return;
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--purple-header)">${arts.length}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Total Products</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--purple-header)">${withHandle}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">From Shopify</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--purple-header)">${withImg}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Have Images</div>
-      </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--purple-header)">${withDesc}</div>
-        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Have Descriptions</div>
-      </div>
-    </div>`;
+// ── TRACKER ──
+function renderTracker() {
+  const arts=db.artworks;
+  const sold=arts.filter(a=>a.status==='sold');
+  const revenue=sold.reduce((s,a)=>s+(parseFloat(a.salePrice||a.sale?.price||0)||0),0);
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-box"><div class="stat-num">${arts.length}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-box"><div class="stat-num">${arts.filter(a=>a.status==='available').length}</div><div class="stat-lbl">Available</div></div>
+    <div class="stat-box"><div class="stat-num">${sold.length}</div><div class="stat-lbl">Sold</div></div>
+    <div class="stat-box"><div class="stat-num">$${revenue.toFixed(0)}</div><div class="stat-lbl">Revenue</div></div>`;
+  const channels={};
+  sold.forEach(a=>{const ch=a.saleChannel||a.sale?.channel||'Other';channels[ch]=(channels[ch]||0)+1;});
+  const maxC=Math.max(...Object.values(channels),1);
+  document.getElementById('channelBars').innerHTML=Object.keys(channels).length?
+    Object.entries(channels).sort((a,b)=>b[1]-a[1]).map(([ch,n])=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:100px;font-size:11px;color:var(--muted)">${ch}</div>
+        <div style="flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--purple-mid);width:${n/maxC*100}%"></div></div>
+        <div style="font-size:11px;width:16px">${n}</div>
+      </div>`).join(''):'<div style="color:var(--muted);font-size:12px">No sales yet</div>';
+  const recent=sold.sort((a,b)=>(b.saleDate||b.addedAt||0)-(a.saleDate||a.addedAt||0)).slice(0,10);
+  document.getElementById('recentSales').innerHTML=recent.length?recent.map(a=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <div>${a.title}</div>
+      <div style="color:var(--green)">${a.salePrice?'$'+parseFloat(a.salePrice).toFixed(2):''}</div>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:12px">No sales recorded</div>';
 }
 
+// ── TOAST ──
+let toastTimer;
+function toast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── INIT ──
+const key=getApiKey();
+if(key){document.getElementById('apiKeyInput').value='••••••••••••••••';document.getElementById('apiKeyStatus').textContent='✓ Key saved';}
+renderSidebar();
+pullFromSheets();
 </script>
 </body>
 </html>
