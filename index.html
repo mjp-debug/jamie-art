@@ -557,7 +557,8 @@ Then: TAGS: [20-30 comma-separated Shopify tags for pet art, include breed if ap
     const seoTitleIdx = text.indexOf('SEO_TITLE:');
     const seoDescIdx = text.indexOf('SEO_DESC:');
     const tagsIdx = text.indexOf('TAGS:');
-    const desc = seoTitleIdx > 0 ? text.substring(0, seoTitleIdx).trim() : text.trim();
+    const desc = (seoTitleIdx > 0 ? text.substring(0, seoTitleIdx).trim() : text.trim())
+      .replace(/^#.*\n+/, '').trim();
     const seoTitleLine = seoTitleIdx >= 0 ? text.substring(seoTitleIdx+10, seoDescIdx>0?seoDescIdx:tagsIdx>0?tagsIdx:undefined).trim() : '';
     const seoDescLine = seoDescIdx >= 0 ? text.substring(seoDescIdx+9, tagsIdx>0?tagsIdx:undefined).trim() : '';
     const tagsLine = tagsIdx >= 0 ? text.substring(tagsIdx+5).trim() : '';
