@@ -152,6 +152,13 @@ select option { background: white; }
 #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--purple-header); color: white; padding: 9px 18px; border-radius: 20px; font-size: 12px; opacity: 0; transition: all 0.25s; z-index: 999; pointer-events: none; white-space: nowrap; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* Photo upload */
+.photo-upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; background: var(--purple-light); transition: border-color 0.15s; margin-bottom: 6px; }
+.photo-upload-area:hover { border-color: var(--purple-mid); }
+.photo-thumb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.photo-thumb-large { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+.photo-upload-status { font-size: 11px; color: var(--muted); }
+
 /* Responsive mobile */
 @media (max-width: 600px) {
   .sidebar { width: 120px; }
@@ -283,6 +290,21 @@ select option { background: white; }
             <input type="text" id="editDetails" placeholder="Room type, occasion, special notes…">
           </div>
           <div class="field-group">
+            <div class="field-label">Photo</div>
+            <div id="photoThumbRow" class="photo-thumb-row" style="display:none">
+              <img id="photoThumbLarge" class="photo-thumb-large">
+              <div>
+                <div id="photoUrl" style="font-size:10px;color:var(--muted);word-break:break-all;max-width:300px"></div>
+                <button class="btn btn-red" style="margin-top:6px;padding:4px 10px;font-size:11px" onclick="removePhoto()">✕ Remove</button>
+              </div>
+            </div>
+            <div class="photo-upload-area" id="photoUploadArea" onclick="document.getElementById('photoFileInput').click()">
+              📷 Tap to upload photo
+            </div>
+            <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+            <div class="photo-upload-status" id="photoUploadStatus"></div>
+          </div>
+          <div class="field-group">
             <div class="field-label">Etsy URL</div>
             <input type="url" id="editEtsy" placeholder="https://etsy.com/listing/...">
           </div>
@@ -360,7 +382,7 @@ select option { background: white; }
 const STORAGE_KEY = 'jamie_art_v4';
 const SETTINGS_KEY = 'jamie_settings_v1';
 const API_KEY_STORE = 'jamie_api_key';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNjDp9KfzbOdnX5ToyZlL5Ctxw99huY2Rr52HcA02ZwzqVxFA2i5TTQ-u2OEx93Jy2aw/exec';
+const DATA_URL = 'https://artisticidiot.volumeservice.com/jamie-art/data.php';
 
 const VARIANT_PRICES = {
   '5x7 Print':'38.00','8x10 Print':'45.00','11x14 Print':'75.00',
@@ -389,20 +411,18 @@ function syncToSheets() {
   syncTimer = setTimeout(async () => {
     setSyncStatus('☁️ Saving…');
     try {
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors',
+      const res = await fetch(DATA_URL, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save_all', artworks: db.artworks.map(a => {
-          const {photo, ...rest} = a;
-          return { ...rest,
-            shopifyVariants: JSON.stringify(a.shopifyVariants||[]),
-            sale: JSON.stringify(a.sale||null),
-            posted: JSON.stringify(a.posted||[])
-          };
-        })})
+        body: JSON.stringify({ artworks: db.artworks, nextId: db.nextId })
       });
-      setSyncStatus('✓ Saved');
-      setTimeout(() => setSyncStatus(''), 3000);
+      const data = await res.json();
+      if (data.success) {
+        setSyncStatus('✓ Saved');
+        setTimeout(() => setSyncStatus(''), 3000);
+      } else {
+        setSyncStatus('⚠️ Save failed');
+      }
     } catch { setSyncStatus('⚠️ Save failed'); }
   }, 1500);
 }
@@ -410,34 +430,17 @@ function syncToSheets() {
 async function pullFromSheets() {
   setSyncStatus('☁️ Loading…');
   try {
-    const res = await fetch(APPS_SCRIPT_URL + '?t=' + Date.now());
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
     const data = await res.json();
-    if (data.ok && data.data && data.data.length) {
-      db.artworks = data.data.map(row => ({
-        id: parseInt(row.id)||0, title: row.title||'', medium: row.medium||'',
-        size: row.size||'', price: row.price||'', status: row.status||'available',
-        desc: row.desc||'', etsy: row.etsy||'', website: row.website||'', photo: row.photo||'',
-        category: row.category||'', breed: row.breed||'', details: row.details||'',
-        shopifyHandle: row.shopifyHandle||'', shopifyImageSrc: row.shopifyImageSrc||'',
-        shopifyDesc: row.shopifyDesc||'', shopifyTags: row.shopifyTags||'',
-        shopifyVendor: row.shopifyVendor||'', shopifyType: row.shopifyType||'',
-        shopifyVariants: tryParse(row.shopifyVariants, []),
-        shopifyPublished: row.shopifyPublished||'TRUE',
-        seoTitle: row.seoTitle||'', seoDesc: row.seoDesc||'',
-        tags: row.tags||'', medium: row.medium||'', size: row.size||'',
-        etsy: row.etsy||'', buyer: row.buyer||'', saleDate: row.saleDate||'',
-        salePrice: row.salePrice||'', saleChannel: row.saleChannel||'',
-        posted: tryParse(row.posted, []),
-        sale: tryParse(row.sale, null),
-        addedAt: row.addedAt||Date.now()
-      }));
-      db.nextId = Math.max(...db.artworks.map(a=>a.id),0)+1;
+    if (data.artworks && data.artworks.length) {
+      db.artworks = data.artworks;
+      db.nextId = data.nextId || (Math.max(...data.artworks.map(a=>a.id), 0) + 1);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
       renderSidebar();
-      setSyncStatus('✓ Loaded');
+      setSyncStatus('✓ Loaded ' + data.artworks.length + ' products');
       setTimeout(() => setSyncStatus(''), 3000);
     } else { setSyncStatus(''); }
-  } catch { setSyncStatus('⚠️ Offline'); setTimeout(()=>setSyncStatus(''),4000); }
+  } catch { setSyncStatus('⚠️ Offline — using local data'); setTimeout(()=>setSyncStatus(''),4000); }
 }
 
 function tryParse(v, fb) { try { return v ? JSON.parse(v) : fb; } catch { return fb; } }
@@ -511,6 +514,19 @@ function selectProduct(id) {
   document.getElementById('editDesc').value = a.desc||a.shopifyDesc||'';
   document.getElementById('editSeoTitle').value = a.seoTitle||'';
   document.getElementById('editSeoDesc').value = a.seoDesc||'';
+
+  // Photo
+  const photoUrl = a.photo||'';
+  if (photoUrl && !photoUrl.startsWith('data:')) {
+    document.getElementById('photoThumbLarge').src = photoUrl;
+    document.getElementById('photoUrl').textContent = photoUrl;
+    document.getElementById('photoThumbRow').style.display = 'flex';
+    document.getElementById('photoUploadArea').style.display = 'none';
+  } else {
+    document.getElementById('photoThumbRow').style.display = 'none';
+    document.getElementById('photoUploadArea').style.display = 'block';
+  }
+  document.getElementById('photoUploadStatus').textContent = '';
   
   document.getElementById('genStatus').textContent = '';
 }
@@ -574,7 +590,7 @@ Then: SEO_DESC: [a good meta description under 160 chars]`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:800, messages:[{role:'user',content:prompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, messages:[{role:'user',content:prompt}] })
     });
     const data = await res.json();
     const text = data.content?.[0]?.text||'';
@@ -791,13 +807,6 @@ function renderTracker() {
     </div>`).join(''):'<div style="color:var(--muted);font-size:12px">No sales recorded</div>';
 }
 
-// ── TOAST ──
-let toastTimer;
-function toast(msg) {
-  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
-}
-
 // ── CATEGORY / BREED ──
 const BREED_OPTIONS = {
   'Dogs': ['Airedale','Australian Shepherd','Basenji','Basset Hound','Beagle','Bernese Mountain Dog','Bichon Frise','Bloodhound','Border Collie','Boston Terrier','Boxer','Cairn Terrier','Cattle Dog','Chihuahua','Chow','Cocker Spaniel','Cockapoo','Coonhound','Corgi','Dachshund / Weenie','Dalmatian','Doberman','Doodle / Labradoodle','English Bulldog','French Bulldog','German Shepherd','Golden Retriever','Great Dane','Great Pyrenees','Greyhound','Havanese','Husky','Irish Wolfhound','Jack Russell','King Charles Spaniel','Labrador','Maltese','Mastiff','Min Pin','Mixed / Mutt','Newfoundland','Papillon','Pekingese','Pitbull','Pomeranian','Poodle','Portuguese Water Dog','Pug','Rat Terrier','Rhodesian Ridgeback','Rottweiler','Saint Bernard','Saluki','Samoyed','Schnauzer','Scottish Terrier','Sheltie / Shetland Sheepdog','Shiba Inu','Shih Tzu','Springer Spaniel','Weimaraner','Westie','Whippet','Wire Haired Dachshund','Yorkshire Terrier','Other'],
@@ -819,6 +828,64 @@ function updateBreedOptions() {
     sel.innerHTML = '<option value="">— select type —</option>' +
       breeds.map(b => `<option value="${b}">${b}</option>`).join('');
   }
+}
+
+// ── PHOTO UPLOAD ──
+const PHOTO_UPLOAD_URL = 'https://artisticidiot.volumeservice.com/jamie-art/upload-photo.php';
+
+async function uploadPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const a = db.artworks.find(x=>x.id===currentId); if (!a) return;
+  const statusEl = document.getElementById('photoUploadStatus');
+  statusEl.textContent = '⏳ Resizing…';
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const img = new Image();
+    img.onload = async () => {
+      const canvas = document.createElement('canvas');
+      const max = 1200; let w = img.width, h = img.height;
+      if (w > max || h > max) { if (w > h) { h = Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const imageData = canvas.toDataURL('image/jpeg', 0.82);
+      const fileName = 'jamie_' + currentId + '_' + Date.now() + '.jpg';
+      statusEl.textContent = '⏳ Uploading…';
+      try {
+        const res = await fetch(PHOTO_UPLOAD_URL, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ imageData, fileName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          a.photo = data.url;
+          saveDb();
+          document.getElementById('photoThumbLarge').src = data.url;
+          document.getElementById('photoUrl').textContent = data.url;
+          document.getElementById('photoThumbRow').style.display = 'flex';
+          document.getElementById('photoUploadArea').style.display = 'none';
+          document.getElementById('detailThumb').innerHTML = `<img src="${data.url}" onerror="this.style.display='none'">`;
+          renderSidebar();
+          statusEl.textContent = '✓ Photo saved!';
+          setTimeout(() => statusEl.textContent='', 3000);
+        } else { statusEl.textContent = '⚠️ Upload failed: '+(data.error||'unknown'); }
+      } catch(err) { statusEl.textContent = '⚠️ Error: '+err.message; }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  const a = db.artworks.find(x=>x.id===currentId); if (!a) return;
+  if (!confirm('Remove photo?')) return;
+  a.photo = '';
+  saveDb();
+  document.getElementById('photoThumbRow').style.display = 'none';
+  document.getElementById('photoUploadArea').style.display = 'block';
+  document.getElementById('photoUploadStatus').textContent = '';
+  document.getElementById('detailThumb').innerHTML = '🖼️';
+  renderSidebar();
+  toast('Photo removed');
 }
 
 // ── INIT ──
