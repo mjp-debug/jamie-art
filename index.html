@@ -190,7 +190,6 @@ select option { background: white; }
 <div class="tab-row">
   <div class="tab active" id="tab-catalog" onclick="switchTab('catalog')">🖼️ Catalog</div>
   <div class="tab" id="tab-shopify" onclick="switchTab('shopify')">🛍️ Shopify Import</div>
-  <div class="tab" id="tab-tracker" onclick="switchTab('tracker')">📊 Sales Tracker</div>
 </div>
 
 <!-- MAIN -->
@@ -260,6 +259,29 @@ select option { background: white; }
             <div class="field-label">Tags</div>
             <input type="text" id="editTags" placeholder="dog art, golden retriever, wall art…">
           </div>
+          <div class="row2">
+            <div class="field-group">
+              <div class="field-label">Category</div>
+              <select id="editCategory" onchange="updateBreedOptions()">
+                <option value="">— none —</option>
+                <option value="Dogs">🐾 Dogs</option>
+                <option value="Cats">🐱 Cats</option>
+                <option value="Flowers">🌸 Flowers</option>
+                <option value="Other Animals">🦎 Other Animals</option>
+                <option value="Other">✨ Other</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <div class="field-label">Breed / Type</div>
+              <select id="editBreed">
+                <option value="">— select category first —</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Additional Details <span style="font-size:10px;color:var(--muted);font-weight:normal">(optional)</span></div>
+            <input type="text" id="editDetails" placeholder="Room type, occasion, special notes…">
+          </div>
           <div class="field-group">
             <div class="field-label">Etsy URL</div>
             <input type="url" id="editEtsy" placeholder="https://etsy.com/listing/...">
@@ -287,34 +309,6 @@ select option { background: white; }
           <div class="field-group">
             <div class="field-label">SEO Description</div>
             <textarea id="editSeoDesc" placeholder="Auto-generated…" style="min-height:70px"></textarea>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-label">Sale Info</div>
-          <div class="row2">
-            <div class="field-group">
-              <div class="field-label">Buyer</div>
-              <input type="text" id="editBuyer" placeholder="Optional">
-            </div>
-            <div class="field-group">
-              <div class="field-label">Sale Date</div>
-              <input type="text" id="editSaleDate" placeholder="YYYY-MM-DD">
-            </div>
-          </div>
-          <div class="row2">
-            <div class="field-group">
-              <div class="field-label">Sale Price</div>
-              <input type="number" id="editSalePrice" placeholder="0.00" step="0.01">
-            </div>
-            <div class="field-group">
-              <div class="field-label">Channel</div>
-              <select id="editSaleChannel">
-                <option>Etsy</option><option>Website</option><option>Instagram DM</option>
-                <option>Facebook</option><option>In Person</option><option>Art Show</option>
-                <option>Commission</option><option>Other</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -356,20 +350,8 @@ select option { background: white; }
       </div>
     </div>
 
-    <!-- TRACKER PANEL -->
-    <div id="panelTracker" style="display:none;padding:20px;max-width:600px">
-      <div class="stats-row" id="statsRow"></div>
-      <div class="section">
-        <div class="section-label">Sales by Channel</div>
-        <div id="channelBars"></div>
-      </div>
-      <div class="section">
-        <div class="section-label">Recently Sold</div>
-        <div id="recentSales"></div>
-      </div>
-    </div>
 
-  </div><!-- end panel -->
+    </div><!-- end panel -->
 </div><!-- end main -->
 
 <div id="toast"></div>
@@ -435,6 +417,7 @@ async function pullFromSheets() {
         id: parseInt(row.id)||0, title: row.title||'', medium: row.medium||'',
         size: row.size||'', price: row.price||'', status: row.status||'available',
         desc: row.desc||'', etsy: row.etsy||'', website: row.website||'', photo: row.photo||'',
+        category: row.category||'', breed: row.breed||'', details: row.details||'',
         shopifyHandle: row.shopifyHandle||'', shopifyImageSrc: row.shopifyImageSrc||'',
         shopifyDesc: row.shopifyDesc||'', shopifyTags: row.shopifyTags||'',
         shopifyVendor: row.shopifyVendor||'', shopifyType: row.shopifyType||'',
@@ -470,11 +453,10 @@ function saveApiKey() {
 // ── TABS ──
 function switchTab(name) {
   currentTab = name;
-  ['catalog','shopify','tracker'].forEach(t => {
+  ['catalog','shopify'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
     document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===name ? '' : 'none';
   });
-  if (name==='tracker') renderTracker();
 }
 
 // ── SIDEBAR ──
@@ -522,13 +504,14 @@ function selectProduct(id) {
   document.getElementById('editSize').value = a.size||'';
   document.getElementById('editTags').value = a.tags||a.shopifyTags||'';
   document.getElementById('editEtsy').value = a.etsy||'';
+  document.getElementById('editCategory').value = a.category||'';
+  updateBreedOptions();
+  document.getElementById('editBreed').value = a.breed||'';
+  document.getElementById('editDetails').value = a.details||'';
   document.getElementById('editDesc').value = a.desc||a.shopifyDesc||'';
   document.getElementById('editSeoTitle').value = a.seoTitle||'';
   document.getElementById('editSeoDesc').value = a.seoDesc||'';
-  document.getElementById('editBuyer').value = a.buyer||a.sale?.buyer||'';
-  document.getElementById('editSaleDate').value = a.saleDate||a.sale?.date||'';
-  document.getElementById('editSalePrice').value = a.salePrice||a.sale?.price||'';
-  document.getElementById('editSaleChannel').value = a.saleChannel||a.sale?.channel||'Etsy';
+  
   document.getElementById('genStatus').textContent = '';
 }
 
@@ -543,13 +526,13 @@ function saveProduct() {
   a.size = document.getElementById('editSize').value.trim();
   a.tags = document.getElementById('editTags').value.trim();
   a.etsy = document.getElementById('editEtsy').value.trim();
+  a.category = document.getElementById('editCategory').value;
+  a.breed = document.getElementById('editBreed').value;
+  a.details = document.getElementById('editDetails').value.trim();
   a.desc = document.getElementById('editDesc').value.trim();
   a.seoTitle = document.getElementById('editSeoTitle').value.trim();
   a.seoDesc = document.getElementById('editSeoDesc').value.trim();
-  a.buyer = document.getElementById('editBuyer').value.trim();
-  a.saleDate = document.getElementById('editSaleDate').value.trim();
-  a.salePrice = document.getElementById('editSalePrice').value;
-  a.saleChannel = document.getElementById('editSaleChannel').value;
+
   // Update header
   document.getElementById('detailTitle').textContent = a.title;
   saveDb(); renderSidebar(); toast('Saved!');
@@ -571,11 +554,17 @@ async function generateDescription() {
   const medium = document.getElementById('editMedium').value;
   const size = document.getElementById('editSize').value;
   const tags = document.getElementById('editTags').value;
+  const category = document.getElementById('editCategory').value;
+  const breed = document.getElementById('editBreed').value;
+  const details = document.getElementById('editDetails').value;
+  const catBreed = [category, breed].filter(Boolean).join(' — ');
   const prompt = `Write a compelling Shopify product description for this art print:
 Title: "${title}"
 Medium: ${medium||'mixed media'}
 Original size: ${size||'various'}
+${catBreed ? 'Category/Subject: ' + catBreed : ''}
 Tags/theme: ${tags||'pet art, animal art'}
+${details ? 'Additional details: ' + details : ''}
 
 Write 2-3 paragraphs. Make it warm, personal, and appealing to art buyers and pet lovers. 
 Mention it's available as a print in multiple sizes. No bullet points. 
@@ -589,13 +578,17 @@ Then: SEO_DESC: [a good meta description under 160 chars]`;
     });
     const data = await res.json();
     const text = data.content?.[0]?.text||'';
-    const seoTitleMatch = text.match(/SEO_TITLE:\s*(.+)/);
-    const seoDescMatch = text.match(/SEO_DESC:\s*(.+)/);
-    const desc = text.replace(/SEO_TITLE:.+/s,'').trim();
+    // Split on SEO_TITLE line
+    const seoTitleIdx = text.indexOf('SEO_TITLE:');
+    const seoDescIdx = text.indexOf('SEO_DESC:');
+    const desc = seoTitleIdx > 0 ? text.substring(0, seoTitleIdx).trim() : text.trim();
+    const seoTitleLine = seoTitleIdx >= 0 ? text.substring(seoTitleIdx + 10, seoDescIdx > 0 ? seoDescIdx : undefined).trim() : '';
+    const seoDescLine = seoDescIdx >= 0 ? text.substring(seoDescIdx + 9).trim() : '';
     document.getElementById('editDesc').value = desc;
-    if (seoTitleMatch) document.getElementById('editSeoTitle').value = seoTitleMatch[1].trim();
-    if (seoDescMatch) document.getElementById('editSeoDesc').value = seoDescMatch[1].trim();
+    if (seoTitleLine) document.getElementById('editSeoTitle').value = seoTitleLine.replace(/^\n+/,'').split('\n')[0].trim();
+    if (seoDescLine) document.getElementById('editSeoDesc').value = seoDescLine.replace(/^\n+/,'').split('\n')[0].trim();
     status.textContent = '✓ Generated — review and save';
+    console.log('Generated desc:', desc.substring(0,100));
   } catch(e) { status.textContent = '⚠️ Error: '+e.message; }
   btn.disabled = false;
 }
@@ -803,6 +796,29 @@ let toastTimer;
 function toast(msg) {
   const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── CATEGORY / BREED ──
+const BREED_OPTIONS = {
+  'Dogs': ['Airedale','Australian Shepherd','Basenji','Basset Hound','Beagle','Bernese Mountain Dog','Bichon Frise','Bloodhound','Border Collie','Boston Terrier','Boxer','Cairn Terrier','Cattle Dog','Chihuahua','Chow','Cocker Spaniel','Cockapoo','Coonhound','Corgi','Dachshund / Weenie','Dalmatian','Doberman','Doodle / Labradoodle','English Bulldog','French Bulldog','German Shepherd','Golden Retriever','Great Dane','Great Pyrenees','Greyhound','Havanese','Husky','Irish Wolfhound','Jack Russell','King Charles Spaniel','Labrador','Maltese','Mastiff','Min Pin','Mixed / Mutt','Newfoundland','Papillon','Pekingese','Pitbull','Pomeranian','Poodle','Portuguese Water Dog','Pug','Rat Terrier','Rhodesian Ridgeback','Rottweiler','Saint Bernard','Saluki','Samoyed','Schnauzer','Scottish Terrier','Sheltie / Shetland Sheepdog','Shiba Inu','Shih Tzu','Springer Spaniel','Weimaraner','Westie','Whippet','Wire Haired Dachshund','Yorkshire Terrier','Other'],
+  'Cats': ['Black Cat','Tabby','Calico','Siamese','Persian','Maine Coon','Ragdoll','Bengal','Sphynx/Hairless','Mixed/Domestic','Other'],
+  'Flowers': ['Rose','Poppy','Lavender','Daisy','Sunflower','Tulip','Mixed Bouquet','Other'],
+  'Other Animals': ['Bird','Chicken/Duck','Cow','Frog','Giraffe','Goat','Hippo','Horse','Llama','Monkey','Owl','Pig','Raccoon','Rhino','Skunk','Sloth','Squirrel','Other'],
+  'Other': ['Other']
+};
+
+function updateBreedOptions() {
+  const cat = document.getElementById('editCategory').value;
+  const sel = document.getElementById('editBreed');
+  const breeds = BREED_OPTIONS[cat] || [];
+  if (!breeds.length) {
+    sel.innerHTML = '<option value="">— select category first —</option>';
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— select type —</option>' +
+      breeds.map(b => `<option value="${b}">${b}</option>`).join('');
+  }
 }
 
 // ── INIT ──
